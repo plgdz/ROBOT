@@ -28,11 +28,14 @@ class State:
                 do_in_state_action_when_entering (bool) : Si une action doit être exécutée à l'entrée. Par défaut à False.
                 do_in_state_action_when_exiting (bool) : Si une action doit être exécutée à la sortie. Par défaut à False.
             """
+
+            if not isinstance(terminal, bool) or not isinstance(do_in_state_action_when_entering, bool) or not isinstance(do_in_state_action_when_exiting, bool):
+                raise TypeError("Les paramètres doivent être des booléens.")
             self.terminal = terminal
             self.do_in_state_action_when_entering = do_in_state_action_when_entering
             self.do_in_state_action_when_exiting = do_in_state_action_when_exiting
 
-    def __init__(self, parameters: Parameters = Parameters()):
+    def __init__(self, parameters: Parameters = Parameters()) -> None:
         """Initialise une instance de State.
 
         Args :
@@ -76,13 +79,15 @@ class State:
         Args :
             transition (Transition) : La transition à ajouter.
         """
+        if not isinstance(transition, Transition):
+            raise TypeError("La transition doit être une instance de Transition.")
         self.__transitions.add(transition)
 
-    def _exec_entering_action(self):
+    def _exec_entering_action(self) -> None:
         """Exécute l'action associée à l'entrée dans l'état."""
         self._do_entering_action()
 
-    def _exec_in_state_action(self):
+    def _exec_in_state_action(self) -> None:
         """Exécute l'action associée à la présence dans l'état."""
         self._do_in_state_action()
 
@@ -90,14 +95,14 @@ class State:
         """Exécute l'action associée à la sortie de l'état."""
         self._do_exiting_action()
 
-    def _do_entering_action(self):
+    def _do_entering_action(self) -> None:
         """Définit l'action à exécuter à l'entrée de l'état."""
         pass
 
-    def _do_in_state_action(self):
+    def _do_in_state_action(self) -> None:
         """Définit l'action à exécuter pendant la présence dans l'état."""
         pass
 
-    def _do_exiting_action(self):
+    def _do_exiting_action(self) -> None:
         """Définit l'action à exécuter à la sortie de l'état."""
         pass
