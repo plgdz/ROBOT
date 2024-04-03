@@ -1,5 +1,5 @@
 from Transition import Transition
-from typing import Callable, List, TypeAlias
+from typing import Callable, List
 import time
 
 class State:
@@ -123,7 +123,7 @@ class State:
 
 class ActionState(State):
 
-    Action : TypeAlias = Callable[[], None]
+    Action = Callable[[], None]
 
     def __init__(self, parameters: State.Parameters = State.Parameters()) -> None:
         """Initialise une instance de State.
