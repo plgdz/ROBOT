@@ -11,12 +11,14 @@ class Transition:
         __next_state (State): L'état vers lequel cette transition mène.
     """
 
-    def __init__(self, next_state: State = None):
+    def __init__(self, next_state: State = None) -> None:
         """Initialise une instance de Transition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
+        if not isinstance(next_state, State):
+            raise TypeError("L'état suivant doit être une instance de State.")
         self.next_state = next_state
 
     @property
@@ -29,12 +31,14 @@ class Transition:
         return self.__next_state
     
     @next_state.setter
-    def next_state(self, next_state: State):
+    def next_state(self, next_state: State) -> None:
         """Définit l'état suivant de la transition.
 
         Args :
             next_state (State): L'état vers lequel la transition doit mener.
         """
+        if not isinstance(next_state, State):
+            raise TypeError("L'état suivant doit être une instance de State.")
         self.__next_state = next_state
 
     @property
@@ -61,14 +65,14 @@ class Transition:
         """
         pass
 
-    def _exec_transiting_action(self):
+    def _exec_transiting_action(self) -> None:
         """Exécute l'action de transition.
 
         Cette méthode appelle `_do_transiting_action` pour effectuer l'action spécifique de transition.
         """
         self._do_transiting_action()
 
-    def _do_transiting_action(self):
+    def _do_transiting_action(self) -> None:
         """Définit l'action à exécuter pendant la transition.
 
         Cette méthode doit être surchargée par les sous-classes pour implémenter l'action spécifique
