@@ -41,6 +41,8 @@ class State:
         Args :
             parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
         """
+        if not isinstance(parameters, self.Parameters):
+            raise TypeError("Les paramètres doivent être une instance de Parameters.")
         self.parameters = parameters
         self.__transitions = set()
 
@@ -69,9 +71,12 @@ class State:
         """Liste les statuts de transition.
 
         Retourne :
-            list[bool] : Une liste indiquant si l'état est actuellement en transition à travers une quelconque transition.
+            bool : La transition en cours, None autrement.
         """
-        return [transition.transiting for transition in self.__transitions.values() if transition.transiting == True]
+        for transition in self.__transitions:
+            if transition.transiting:
+                return transition
+        return None
 
     def add_transition(self, transition: Transition):
         """Ajoute une transition à l'état.
@@ -86,14 +91,19 @@ class State:
     def _exec_entering_action(self) -> None:
         """Exécute l'action associée à l'entrée dans l'état."""
         self._do_entering_action()
+        if self.parameters.do_in_state_action_when_entering:
+            self._exec_in_state_action()
 
     def _exec_in_state_action(self) -> None:
         """Exécute l'action associée à la présence dans l'état."""
         self._do_in_state_action()
 
-    def _exec_exiting_action(self):
+    def _exec_exiting_action(self) -> None:
         """Exécute l'action associée à la sortie de l'état."""
+        if self.parameters.do_in_state_action_when_exiting:
+            self._exec_in_state_action()
         self._do_exiting_action()
+        
 
     def _do_entering_action(self) -> None:
         """Définit l'action à exécuter à l'entrée de l'état."""
