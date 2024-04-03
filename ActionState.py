@@ -2,9 +2,7 @@ from State import State, Parameters
 
 class ActionState(State):
 
-    class Action:
-        def __init__(self) -> None:
-            self.action = callable[[], None]
+    Action = callable[[], None]
 
     def __init__(self, parameters: Parameters = Parameters()) -> None:
         """Initialise une instance de State.
