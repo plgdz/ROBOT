@@ -1,20 +1,14 @@
 from enum import Enum, auto
-
-class State:
-    def __init__(self):
-        pass
-
-    def valid(self) -> bool:
-        return True
-    
-class Transition:
-    def __init__(self) -> None:
-        pass
+from Transition import Transition
+from State import State
+from time import perf_counter
+from typing import List
 
 class FiniteStateMachine:
+
     class Layout:
         def __init__(self) -> None:
-            self.__states = {State(), State()}
+            self.__states: List[State] = [State()]
             self.initial_state = self.__states[0]
            
         @property
@@ -43,6 +37,8 @@ class FiniteStateMachine:
         def add_state(self, state) -> None:
             if(isinstance(state, State)):
                 raise ValueError("state must be of type State")
+            if state in self.__states:
+                raise ValueError("state must be unique")
             self.__states.add(state)
        
         def add_states(self, states) -> None:
@@ -85,19 +81,37 @@ class FiniteStateMachine:
         self.__current_applicative_state = self.__layout.initial_state
 
     def _transit_by(self, transition : Transition) -> None:
-        pass
+        self.current_applicative_state._exec_exiting_action()
+        transition._exec_transiting_action()
+        self.transit_to(transition.next_state)
+        self.current_applicative_state._exec_entering_action()
 
     def transit_to(self, state : State) -> None:
-        pass
+        self.current_applicative_state = state
         
     def track(self) -> bool:
-        return self.current_applicative_state.transiting()
+        transition = self.current_applicative_state.transiting()
+        if transition:
+            self._transit_by(transition)
+        else:
+            self.current_applicative_state._exec_in_state_action()
+        if self.current_applicative_state.terminal:
+            self.__current_operational_state = self.OperationalState.TERMINAL_REACHED
+            return False
+        return True
+            
     
     def start(self, reset: bool = True, time_budget: float = None):
+        if reset:
+            self.reset()
+
         self.__current_operational_state = self.OperationalState.RUNNING
         run = True
-        while run and time_budget:
+        init_time = perf_counter()
+        while time_budget > perf_counter() - init_time:
             run = self.track()
+            if not run:
+                self.stop()
        
     def stop(self):
         self.__current_operational_state = self.OperationalState.IDLE
