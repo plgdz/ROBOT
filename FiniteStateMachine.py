@@ -6,8 +6,12 @@ class State:
 
     def valid(self) -> bool:
         return True
+    
+class Transition:
+    def __init__(self) -> None:
+        pass
 
-class FinitStateMachine:
+class FiniteStateMachine:
     class Layout:
         def __init__(self) -> None:
             self.__states = {State(), State()}
@@ -79,16 +83,26 @@ class FinitStateMachine:
     def reset(self):
         self.__current_operational_state = self.OperationalState.IDLE
         self.__current_applicative_state = self.__layout.initial_state
+
+    def _transit_by(self, transition : Transition) -> None:
+        pass
+
+    def transit_to(self, state : State) -> None:
+        pass
         
-       
+    def track(self) -> bool:
+        return self.current_applicative_state.transiting()
+    
     def start(self, reset: bool = True, time_budget: float = None):
         self.__current_operational_state = self.OperationalState.RUNNING
+        run = True
+        while run and time_budget:
+            run = self.track()
        
     def stop(self):
         self.__current_operational_state = self.OperationalState.IDLE
        
-    def track(self) -> bool:
-        pass
+    
 
 def main():
     pass
