@@ -5,6 +5,7 @@ from typing import List
 from time import perf_counter
 
 class Condition:
+    # TODO: Vérifier si le __inverse est correct
     def __init__(self, inverse: bool = False) -> None:
         self.__inverse = inverse
 
@@ -39,103 +40,261 @@ class ConditionalTransition(Transition):
         return self.__condition is not None and self.__condition._compare()
 
 class ManyConditions(Condition): 
+    """
+    Represents a collection of conditions.
+
+    Args:
+        inverse (bool, optional): Indicates whether the conditions should be inverted. Defaults to False.
+    """
+
     def __init__(self, inverse: bool = False) -> None:
         super().__init__(inverse)
         self._conditions : List[Condition] = []
 
     def add_condition(self, condition: Condition) -> None:
+        """
+        Adds a single condition to the collection.
+
+        Args:
+            condition (Condition): The condition to add.
+        """
         self._conditions.append(condition)
 
     def add_conditions(self, conditions: List[Condition]) -> None:
+        """
+        Adds multiple conditions to the collection.
+
+        Args:
+            conditions (List[Condition]): The conditions to add.
+        """
         self._conditions.extend(conditions)
 
 class AllConditions(ManyConditions):
+    """
+    A class representing a collection of conditions that must all be True.
+
+    Inherits from the ManyConditions class.
+
+    Args:
+        inverse (bool, optional): If True, the result of the conditions will be inverted. Defaults to False.
+
+    Methods:
+        _compare(): Compares all conditions and returns True if all conditions are True, False otherwise.
+    """
+
     def __init__(self, inverse: bool = False) -> None:
         super().__init__(inverse)
 
     def _compare(self) -> bool:
+        """
+        Compares all conditions and returns True if all conditions are True, False otherwise.
+        """
         return all(condition for condition in self._conditions)
     
 class AnyConditions(ManyConditions):
+    """
+    A class representing a collection of conditions that are evaluated using the 'any' operator.
+
+    Args:
+        inverse (bool, optional): If True, the result of the condition evaluation will be inverted. Defaults to False.
+
+    Methods:
+        _compare(): Evaluates the conditions using the 'any' operator and returns the result.
+
+    """
+
     def __init__(self, inverse: bool = False) -> None:
         super().__init__(inverse)
 
     def _compare(self) -> bool:
+        """
+        Evaluates the conditions using the 'any' operator and returns the result.
+
+        Returns:
+            bool: True if any of the conditions evaluate to True, False otherwise.
+
+        """
         return any(condition for condition in self._conditions)
     
 class NoneConditions(ManyConditions):
+    """
+    Represents a set of conditions that evaluates to True if none of the conditions are True.
+    Inherits from the ManyConditions class.
+    """
+
     def __init__(self, inverse: bool = False) -> None:
         super().__init__(inverse)
 
     def _compare(self) -> bool:
+        """
+        Compares the conditions and returns True if none of the conditions are True.
+        Returns:
+            bool: True if none of the conditions are True, False otherwise.
+        """
         return not any(condition for condition in self._conditions)
 
 class MonitoredStateCondition(Condition):
+    """
+    Represents a condition based on a monitored state.
+
+    Args:
+        monitored_state (MonitoredState): The monitored state object.
+        inverse (bool, optional): Whether the condition should be inverted. Defaults to False.
+    """
+
     def __init__(self, monitored_state: MonitoredState, inverse: bool = False) -> None:
         super().__init__(inverse)
-        self._monitored_state : MonitoredState = monitored_state
+        self._monitored_state: MonitoredState = monitored_state
 
     @property
     def monitored_state(self) -> MonitoredState:
+        """
+        Get the monitored state object.
+
+        Returns:
+            MonitoredState: The monitored state object.
+        """
         return self._monitored_state
     
     @monitored_state.setter
     def monitored_state(self, monitored_state: MonitoredState) -> None:
-        self._monitored_state : MonitoredState = monitored_state
+        """
+        Set the monitored state object.
 
+        Args:
+            monitored_state (MonitoredState): The monitored state object.
+        """
+        self._monitored_state: MonitoredState = monitored_state
+
+# TODO: Regarder si le _compare est correct
 class StateEntryDurationCondition(MonitoredStateCondition):
-    def __init__(self, duration : float, monitored_state: MonitoredState, inverse: bool = False) -> None:
+    """
+    A condition that checks if the duration of the monitored state's last entry
+    is greater than or equal to a specified duration.
+
+    Args:
+        duration (float): The duration threshold to compare against.
+        monitored_state (MonitoredState): The monitored state to check.
+        inverse (bool, optional): If True, the condition will be inverted. Defaults to False.
+    """
+
+    def __init__(self, duration: float, monitored_state: MonitoredState, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
-        self._duration : float = duration
+        self._duration: float = duration
 
     @property
     def duration(self) -> float:
+        """
+        Get the duration threshold.
+
+        Returns:
+            float: The duration threshold.
+        """
         return self._duration
     
     @duration.setter
     def duration(self, duration: float) -> None:
-        self._duration : float = duration
+        """
+        Set the duration threshold.
+
+        Args:
+            duration (float): The new duration threshold.
+        """
+        self._duration: float = duration
 
     def _compare(self) -> bool:
+        """
+        Compare the duration of the monitored state's last entry with the threshold.
+
+        Returns:
+            bool: True if the duration is greater than or equal to the threshold, False otherwise.
+        """
         return self._monitored_state.counter_last_entry >= self._duration
     
 class StateEntryCountCondition(MonitoredStateCondition):
-    def __init__(self, expected_count : int, monitored_state: MonitoredState, auto_reset : bool, inverse: bool = False) -> None:
+    """
+    Represents a condition based on the entry count of a monitored state.
+
+    Args:
+        expected_count (int): The expected entry count.
+        monitored_state (MonitoredState): The monitored state object.
+        auto_reset (bool): Flag indicating whether the count should be automatically reset.
+        inverse (bool, optional): Flag indicating whether the condition should be inverted. Defaults to False.
+    """
+
+    def __init__(self, expected_count: int, monitored_state: MonitoredState, auto_reset: bool, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
-        self.__expected_count = expected_count
         self.__ref_count = monitored_state.entry_count
         self.__expected_count = expected_count
+        self.__auto_reset = auto_reset
 
     @property
     def expected_count(self) -> int:
+        """
+        Get the expected entry count.
+
+        Returns:
+            int: The expected entry count.
+        """
         return self.__expected_count
     
     @expected_count.setter
     def expected_count(self, expected_count: int) -> None:
-        self.__expected_count = expected_count
+        """
+        Set the expected entry count.
+
+        Args:
+            expected_count (int): The expected entry count.
+        """
+        self.__expected_count : int = expected_count
 
     def _compare(self) -> bool:
+        """
+        Compare the entry count with the expected count.
+
+        Returns:
+            bool: True if the condition is met, False otherwise.
+        """
         return self._monitored_state.entry_count - self.__ref_count >= self.__expected_count
     
     def reset_count(self) -> None:
-        self.__ref_count = self._monitored_state.entry_count
+        """
+        Reset the reference count to the current entry count.
+
+        This method is called to reset the count if `auto_reset` is True.
+        """
+        if self.__auto_reset:
+            self.__ref_count : int = self._monitored_state.entry_count
 
 class StateValueCondition(MonitoredStateCondition):
-    def __init__(self, expected_value : any, monitored_state: MonitoredState, inverse: bool = False) -> None:
+    """
+    Represents a condition that checks if a monitored state's custom value matches an expected value.
+    """
+
+    def __init__(self, expected_value: any, monitored_state: MonitoredState, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
         self.__expected_value = expected_value
 
     @property
     def expected_value(self) -> any:
+        """
+        Get the expected value for the condition.
+        """
         return self.__expected_value
     
     @expected_value.setter
     def expected_value(self, expected_value: any) -> None:
+        """
+        Set the expected value for the condition.
+        """
         self.__expected_value = expected_value
 
     def _compare(self) -> bool:
+        """
+        Compare the monitored state's custom value with the expected value.
+        Returns True if they match, False otherwise.
+        """
         return self._monitored_state.custom_value == self.__expected_value
-    
     
 class AlwaysTrueCondition(Condition):
     """Représente une condition qui évalue toujours à True.
