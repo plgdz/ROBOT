@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from State import State
+from typing import Callable, List
 
 class Transition:
     """Représente une transition entre les états dans une machine à états.
@@ -79,3 +80,55 @@ class Transition:
         de la transition.
         """
         pass
+
+class ActionTransition(Transition):
+
+    Action = Callable[[], None]
+
+    def __init__(self, next_state: State = None) -> None:
+        """Initialise une instance de Transition.
+
+        Args :
+            next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
+        """
+        super().__init__(next_state)
+        self.__transiting_actions : List[self.Action] = []
+
+    def _do_entering_action(self) -> None:
+        super()._do_entering_action()
+
+    def _do_in_state_action(self) -> None:
+        super()._do_in_state_action()
+
+    def _do_exiting_action(self) -> None:
+        super()._do_exiting_action()
+
+    def add_entering_action(self, action: Action) -> None:
+        """Ajoute une action à exécuter à l'entrée de l'état.
+
+        Args :
+            action (Action) : L'action à exécuter.
+        """
+        if not isinstance(action, self.Action):
+            raise TypeError("L'action doit être une instance de Action.")
+        self.__entering_actions.add(action)
+
+    def add_in_state_action(self, action: Action) -> None:
+        """Ajoute une action à exécuter pendant l'état.
+
+        Args :
+            action (Action) : L'action à exécuter.
+        """
+        if not isinstance(action, self.Action):
+            raise TypeError("L'action doit être une instance de Action.")
+        self.__in_state_actions.add(action)
+
+    def add_exiting_action(self, action: Action) -> None:
+        """Ajoute une action à exécuter à la sortie de l'état.
+
+        Args :
+            action (Action) : L'action à exécuter.
+        """
+        if not isinstance(action, self.Action):
+            raise TypeError("L'action doit être une instance de Action.")
+        self.__exiting_actions.add(action) 
