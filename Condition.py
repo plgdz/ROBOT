@@ -14,7 +14,7 @@ class Condition:
         pass
 
     def __bool__(self) -> bool:
-        pass
+        return self._compare()
 
 class ConditionalTransition(Transition):
     #
@@ -25,7 +25,10 @@ class ConditionalTransition(Transition):
     #
     @property
     def valid(self) -> bool:
-        return self.__condition is None or bool(self.__condition)
+        # if self.__condition:
+        #     return True
+        # return False
+        return (self.__condition is not None) and super().valid
     
     @property
     def condition(self) -> Condition:
@@ -37,7 +40,7 @@ class ConditionalTransition(Transition):
     
     #
     def is_transiting(self) -> bool:
-        return self.__condition is not None and self.__condition._compare()
+        return bool(self.__condition)
 
 class ManyConditions(Condition): 
     """
@@ -326,6 +329,7 @@ class AlwaysTrueCondition(Condition):
         return True
 
 
+# TODO
 class ValueCondition(Condition):
     """Compare une valeur donnée à une valeur attendue pour déterminer la validité de la condition.
 
