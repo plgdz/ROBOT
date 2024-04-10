@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from State import State
 from typing import Callable, List
+import time
 
 class Transition:
     """Représente une transition entre les états dans une machine à états.
@@ -86,7 +87,7 @@ class ActionTransition(Transition):
     Action = Callable[[], None]
 
     def __init__(self, next_state: State = None) -> None:
-        """Initialise une instance de Transition.
+        """Initialise une instance de ActionTransition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
@@ -94,41 +95,60 @@ class ActionTransition(Transition):
         super().__init__(next_state)
         self.__transiting_actions : List[self.Action] = []
 
-    def _do_entering_action(self) -> None:
-        super()._do_entering_action()
+    def _do_transiting_action(self) -> None:
+        super()._do_transiting_action()
+        for transition_action in self.__transiting_actions:
+            transition_action()
 
-    def _do_in_state_action(self) -> None:
-        super()._do_in_state_action()
 
-    def _do_exiting_action(self) -> None:
-        super()._do_exiting_action()
-
-    def add_entering_action(self, action: Action) -> None:
-        """Ajoute une action à exécuter à l'entrée de l'état.
+    def add_transiting_action(self, action: Action) -> None:
+        """Ajoute une action à exécuter au moment de transition.
 
         Args :
             action (Action) : L'action à exécuter.
         """
         if not isinstance(action, self.Action):
             raise TypeError("L'action doit être une instance de Action.")
-        self.__entering_actions.add(action)
-
-    def add_in_state_action(self, action: Action) -> None:
-        """Ajoute une action à exécuter pendant l'état.
-
-        Args :
-            action (Action) : L'action à exécuter.
-        """
-        if not isinstance(action, self.Action):
-            raise TypeError("L'action doit être une instance de Action.")
-        self.__in_state_actions.add(action)
-
-    def add_exiting_action(self, action: Action) -> None:
-        """Ajoute une action à exécuter à la sortie de l'état.
+        self.__transiting_actions.add(action)
+        
+class MonitoredTransition(ActionTransition):
+    
+    def __init__(self, next_state: State = None) -> None:
+        """Initialise une instance de MonitoredTransition.
 
         Args :
-            action (Action) : L'action à exécuter.
+            next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
-        if not isinstance(action, self.Action):
-            raise TypeError("L'action doit être une instance de Action.")
-        self.__exiting_actions.add(action) 
+        super().__init__(next_state)
+        self.__transit_count : int = 0
+        self.__last_transit_time : float = 0
+        self.custom_value : any = None
+
+    @property
+    def transit_count(self) -> int:
+        return self.__transit_count
+    
+    @transit_count.setter
+    def transit_count(self) -> None:
+        raise ValueError("transit_count is a read-only property")
+    
+    @property
+    def last_transit_time(self) -> float:
+        return self.__last_transit_time
+    
+    @last_transit_time.setter
+    def last_transit_time(self) -> None:
+        raise ValueError("last_transit_time is a read-only property")
+    
+    def reset_transit_count(self) -> None:
+        self.__transit_count = 0
+
+    def reset_last_transit_time(self) -> None:
+        self.__last_transit_time = 0
+        
+    def _exec_transiting_action(self) -> None:
+        self.__last_transit_time = time.perf_counter()
+        self.__transit_count += 1
+        super()._exec_transiting_action()
+        
+        
