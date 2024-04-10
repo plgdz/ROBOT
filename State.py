@@ -138,12 +138,18 @@ class ActionState(State):
 
     def _do_entering_action(self) -> None:
         super()._do_entering_action()
+        for action in self.__entering_actions:
+            action()
 
     def _do_in_state_action(self) -> None:
         super()._do_in_state_action()
+        for action in self.__in_state_actions:
+            action()
 
     def _do_exiting_action(self) -> None:
         super()._do_exiting_action()
+        for action in self.__exiting_actions:
+            action()
 
     def add_entering_action(self, action: Action) -> None:
         """Ajoute une action à exécuter à l'entrée de l'état.
@@ -232,5 +238,6 @@ class MonitoredState(ActionState):
 
         def _exec_exiting_action(self) -> None:
             """Exécute l'action associée à la sortie de l'état."""
-            self.__counter_last_exit = time.perf_counter()
             super()._exec_exiting_action()
+            self.__counter_last_exit = time.perf_counter()
+            
