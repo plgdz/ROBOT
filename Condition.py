@@ -24,7 +24,7 @@ class ConditionalTransition(Transition):
 
     #
     @property
-    def is_valid(self) -> bool:
+    def valid(self) -> bool:
         return self.__condition is None or bool(self.__condition)
     
     @property
@@ -181,6 +181,8 @@ class StateEntryDurationCondition(MonitoredStateCondition):
     def __init__(self, duration: float, monitored_state: MonitoredState, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
         self._duration: float = duration
+        self.monitored_state: MonitoredState = monitored_state
+        self.inverse: bool = inverse
 
     @property
     def duration(self) -> float:
@@ -209,7 +211,9 @@ class StateEntryDurationCondition(MonitoredStateCondition):
         Returns:
             bool: True if the duration is greater than or equal to the threshold, False otherwise.
         """
-        return self._monitored_state.counter_last_entry >= self._duration
+
+        return perf_counter() - self.monitored_state.last_entry_time >= self.duration
+        # return self._monitored_state.__counter_last_exit - self.monitored_state.__counter_last_entry>= self._duration
     
 class StateEntryCountCondition(MonitoredStateCondition):
     """

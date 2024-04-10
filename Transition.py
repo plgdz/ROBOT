@@ -19,8 +19,8 @@ class Transition:
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
-        if not isinstance(next_state, State):
-            raise TypeError("L'état suivant doit être une instance de State.")
+        if not isinstance(next_state, (State, type(None))):
+            raise TypeError("next_state doit être une instance de State.")
         self.next_state = next_state
 
     @property
@@ -40,7 +40,7 @@ class Transition:
             next_state (State): L'état vers lequel la transition doit mener.
         """
         if not isinstance(next_state, State):
-            raise TypeError("L'état suivant doit être une instance de State.")
+            raise TypeError("next_state doit être une instance de State.")
         self.__next_state = next_state
 
     @property
@@ -80,7 +80,7 @@ class Transition:
         Cette méthode doit être surchargée par les sous-classes pour implémenter l'action spécifique
         de la transition.
         """
-        pass
+        print("fdsf")
 
 class ActionTransition(Transition):
 
@@ -97,8 +97,8 @@ class ActionTransition(Transition):
 
     def _do_transiting_action(self) -> None:
         super()._do_transiting_action()
-        for transition_action in self.__transiting_actions:
-            transition_action()
+        for transiting_action in self.__transiting_actions:
+            transiting_action()
 
 
     def add_transiting_action(self, action: Action) -> None:
