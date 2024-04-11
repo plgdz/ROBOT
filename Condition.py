@@ -216,7 +216,7 @@ class StateEntryDurationCondition(MonitoredStateCondition):
         """
 
         return perf_counter() - self.monitored_state.last_entry_time >= self.duration
-        # return self._monitored_state.__counter_last_exit - self.monitored_state.__counter_last_entry>= self._duration
+        
     
 class StateEntryCountCondition(MonitoredStateCondition):
     """
