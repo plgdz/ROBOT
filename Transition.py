@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from State import State
-from typing import Callable, List
+from typing import Callable, List, TYPE_CHECKING
 import time
+if TYPE_CHECKING:
+    from State import State
 
 class Transition:
     """Représente une transition entre les états dans une machine à états.
@@ -13,18 +14,19 @@ class Transition:
         __next_state (State): L'état vers lequel cette transition mène.
     """
 
-    def __init__(self, next_state: State = None) -> None:
+    def __init__(self, next_state: 'State' = None) -> None:
         """Initialise une instance de Transition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
+        from State import State
         if not isinstance(next_state, (State, type(None))):
             raise TypeError("next_state doit être une instance de State.")
         self.next_state = next_state
 
     @property
-    def next_state(self) -> State:
+    def next_state(self) -> 'State':
         """Obtient l'état suivant de la transition.
 
         Retourne :
@@ -33,12 +35,13 @@ class Transition:
         return self.__next_state
     
     @next_state.setter
-    def next_state(self, next_state: State) -> None:
+    def next_state(self, next_state: 'State') -> None:
         """Définit l'état suivant de la transition.
 
         Args :
             next_state (State): L'état vers lequel la transition doit mener.
         """
+        from State import State
         if not isinstance(next_state, State):
             raise TypeError("next_state doit être une instance de State.")
         self.__next_state = next_state
@@ -86,7 +89,7 @@ class ActionTransition(Transition):
 
     Action = Callable[[], None]
 
-    def __init__(self, next_state: State = None) -> None:
+    def __init__(self, next_state: 'State' = None) -> None:
         """Initialise une instance de ActionTransition.
 
         Args :
@@ -113,7 +116,7 @@ class ActionTransition(Transition):
         
 class MonitoredTransition(ActionTransition):
     
-    def __init__(self, next_state: State = None) -> None:
+    def __init__(self, next_state: 'State' = None) -> None:
         """Initialise une instance de MonitoredTransition.
 
         Args :

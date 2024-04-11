@@ -1,6 +1,8 @@
-from Transition import Transition
-from typing import Callable, List
+# Version: 1.0
+from typing import Callable, List, Optional, TYPE_CHECKING
 import time
+if TYPE_CHECKING:
+    from Transition import Transition
 
 class State:
     """Représente un état dans une machine à états.
@@ -37,15 +39,14 @@ class State:
             self.do_in_state_action_when_entering = do_in_state_action_when_entering
             self.do_in_state_action_when_exiting = do_in_state_action_when_exiting
 
-    def __init__(self, parameters: Parameters = Parameters()) -> None:
+    def __init__(self, parameters: Optional[Parameters] = None) -> None:
         """Initialise une instance de State.
 
         Args :
             parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
         """
-        if not isinstance(parameters, self.Parameters):
-            raise TypeError("Les paramètres doivent être une instance de Parameters.")
-        self.parameters = parameters
+        
+        self.parameters : State.Parameters = parameters if parameters is not None else self.Parameters()
         self.__transitions = []
 
     @property
@@ -80,12 +81,13 @@ class State:
                 return transition
         return None
 
-    def add_transition(self, transition: Transition):
+    def add_transition(self, transition: 'Transition'):
         """Ajoute une transition à l'état.
 
         Args :
             transition (Transition) : La transition à ajouter.
         """
+        from Transition import Transition
         if not isinstance(transition, Transition):
             raise TypeError("La transition doit être une instance de Transition.")
         if transition in self.__transitions:
@@ -125,7 +127,7 @@ class ActionState(State):
 
     Action = Callable[[], None]
 
-    def __init__(self, parameters: State.Parameters = State.Parameters()) -> None:
+    def __init__(self, parameters: Optional[State.Parameters] = None) -> None:
         """Initialise une instance de State.
 
         Args :
@@ -157,9 +159,9 @@ class ActionState(State):
         Args :
             action (Action) : L'action à exécuter.
         """
-        if not isinstance(action, self.Action):
+        if not callable(action):
             raise TypeError("L'action doit être une instance de Action.")
-        self.__entering_actions.add(action)
+        self.__entering_actions.append(action)
 
     def add_in_state_action(self, action: Action) -> None:
         """Ajoute une action à exécuter pendant l'état.
@@ -167,9 +169,9 @@ class ActionState(State):
         Args :
             action (Action) : L'action à exécuter.
         """
-        if not isinstance(action, self.Action):
+        if not callable(action):
             raise TypeError("L'action doit être une instance de Action.")
-        self.__in_state_actions.add(action)
+        self.__in_state_actions.append(action)
 
     def add_exiting_action(self, action: Action) -> None:
         """Ajoute une action à exécuter à la sortie de l'état.
@@ -177,67 +179,68 @@ class ActionState(State):
         Args :
             action (Action) : L'action à exécuter.
         """
-        if not isinstance(action, self.Action):
+        if not callable(action):
             raise TypeError("L'action doit être une instance de Action.")
-        self.__exiting_actions.add(action) 
+        self.__exiting_actions.append(action) 
 
 class MonitoredState(ActionState):
-    def __init__(self, parameters: State.Parameters = State.Parameters()) -> None:
+    def __init__(self, parameters: Optional[State.Parameters] = None) -> None:
         """Initialise une instance de State.
 
         Args :
             parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
         """
         super().__init__(parameters)
-        self.__counter_last_entry : float = 0
-        self.__counter_last_exit : float = 0
+        self.__counter_last_entry : complex = 0
+        self.__counter_last_exit : complex = 0
         self.__entry_count : int = 0
         self.custom_value : any = None
 
-        @property
-        def entry_count(self) -> int:
-            """Obtient le nombre d'entrées dans l'état.
+    @property
+    def entry_count(self) -> int:
+        """Obtient le nombre d'entrées dans l'état.
 
-            Retourne :
-                int : Le nombre d'entrées dans l'état.
-            """
-            return self.__entry_count
+        Retourne :
+            int : Le nombre d'entrées dans l'état.
+        """
+        return self.__entry_count
+    
+    @property
+    def last_entry_time(self) -> float:
+        """Obtient le compteur de la dernière entrée dans l'état.
+
+        Retourne :
+            float : Le compteur de la dernière entrée dans l'état.
+        """
+        return self.__counter_last_entry
+    
+    
+    @property
+    def last_exit_time(self) -> float:
+        """Obtient le compteur de la dernière sortie de l'état.
+
+        Retourne :
+            float : Le compteur de la dernière sortie de l'état.
+        """
+        return self.__counter_last_exit
+    
+    def reset_entry_count(self) -> None:
+        """Réinitialise le compteur d'entrées."""
+        self.__entry_count = 0
+
+    def reset_last_times(self) -> None:
+        """Réinitialise les compteurs de temps."""
+        self.__counter_last_entry = 0
+        self.__counter_last_exit = 0
+
+    def _exec_entering_action(self) -> None:
+        """Exécute l'action associée à l'entrée dans l'état."""
+        self.__counter_last_entry = time.perf_counter()
+        self.__entry_count += 1
+        super()._exec_entering_action()
+
+    def _exec_exiting_action(self) -> None:
+        """Exécute l'action associée à la sortie de l'état."""
+        super()._exec_exiting_action()
+        self.__counter_last_exit = time.perf_counter()
         
-        @property
-        def last_entry_time(self) -> float:
-            """Obtient le compteur de la dernière entrée dans l'état.
-
-            Retourne :
-                float : Le compteur de la dernière entrée dans l'état.
-            """
-            return self.__counter_last_entry
-        
-        @property
-        def last_exit_time(self) -> float:
-            """Obtient le compteur de la dernière sortie de l'état.
-
-            Retourne :
-                float : Le compteur de la dernière sortie de l'état.
-            """
-            return self.__counter_last_exit
-        
-        def reset_entry_count(self) -> None:
-            """Réinitialise le compteur d'entrées."""
-            self.__entry_count = 0
-
-        def reset_last_times(self) -> None:
-            """Réinitialise les compteurs de temps."""
-            self.__counter_last_entry = 0
-            self.__counter_last_exit = 0
-
-        def _exec_entering_action(self) -> None:
-            """Exécute l'action associée à l'entrée dans l'état."""
-            self.__counter_last_entry = time.perf_counter()
-            self.__entry_count += 1
-            super()._exec_entering_action()
-
-        def _exec_exiting_action(self) -> None:
-            """Exécute l'action associée à la sortie de l'état."""
-            super()._exec_exiting_action()
-            self.__counter_last_exit = time.perf_counter()
-            

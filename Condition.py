@@ -14,7 +14,7 @@ class Condition:
         pass
 
     def __bool__(self) -> bool:
-        return self._compare()
+        return self._compare() if not self.__inverse else not self._compare()
 
 class ConditionalTransition(Transition):
     #
