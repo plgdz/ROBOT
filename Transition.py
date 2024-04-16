@@ -3,6 +3,7 @@ from typing import Callable, List, TYPE_CHECKING
 import time
 if TYPE_CHECKING:
     from State import State
+    from Condition import Condition
 
 class Transition:
     """Représente une transition entre les états dans une machine à états.
@@ -84,6 +85,28 @@ class Transition:
         de la transition.
         """
         print("fdsf")
+
+
+class ConditionalTransition(Transition):
+    
+    def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
+        super().__init__(next_state)
+        self.__condition : 'Condition' = condition
+
+    @property
+    def valid(self) -> bool:
+        return (self.__condition is not None) and super().valid()
+    
+    @property
+    def condition(self) -> 'Condition':
+        return self.__condition
+    
+    @condition.setter
+    def condition(self, condition: 'Condition') -> None:
+        self.__condition : 'Condition' = condition
+    
+    def is_transiting(self) -> bool:
+        return bool(self.__condition)
 
 class ActionTransition(Transition):
 

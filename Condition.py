@@ -5,8 +5,9 @@ from typing import List
 from time import perf_counter
 
 class Condition:
-    # TODO: Vérifier si le __inverse est correct
     def __init__(self, inverse: bool = False) -> None:
+        if not isinstance(inverse, bool):
+            raise ValueError("The inverse parameter must be a boolean.")
         self.__inverse = inverse
 
     @abstractmethod
@@ -16,31 +17,25 @@ class Condition:
     def __bool__(self) -> bool:
         return self._compare() if not self.__inverse else not self._compare()
 
-class ConditionalTransition(Transition):
-    #
-    def __init__(self, next_state: State, condition: Condition = None) -> None:
-        super().__init__(next_state)
-        self.__condition : Condition = condition
+class ConditionList:
+    def __init__(self) -> None:
+        self._conditions : List[Condition] = []
 
-    #
-    @property
-    def valid(self) -> bool:
-        # if self.__condition:
-        #     return True
-        # return False
-        return (self.__condition is not None) and super().valid
+    def __getitem__(self, key: int) -> Condition:
+        return self._conditions[key]
     
-    @property
-    def condition(self) -> Condition:
-        return self.__condition
+    def __delitem__(self, key: int) -> None:
+        del self._conditions[key]
+
+    def __len__(self) -> int:
+        return len(self._conditions)
     
-    @condition.setter
-    def condition(self, condition: Condition) -> None:
-        self.__condition : Condition = condition
-    
-    #
-    def is_transiting(self) -> bool:
-        return bool(self.__condition)
+    def append(self, condition: Condition) -> None:
+        if not isinstance(condition, Condition):
+            raise ValueError("The condition must be an instance of Condition.")
+        self._conditions.append(condition)
+
+
 
 class ManyConditions(Condition): 
     """
@@ -52,7 +47,7 @@ class ManyConditions(Condition):
 
     def __init__(self, inverse: bool = False) -> None:
         super().__init__(inverse)
-        self._conditions : List[Condition] = []
+        self._conditions : ConditionList = ConditionList()
 
     def add_condition(self, condition: Condition) -> None:
         """
@@ -61,6 +56,8 @@ class ManyConditions(Condition):
         Args:
             condition (Condition): The condition to add.
         """
+        if not isinstance(condition, Condition):
+            raise ValueError("The condition must be an instance of Condition.")
         self._conditions.append(condition)
 
     def add_conditions(self, conditions: List[Condition]) -> None:
@@ -70,7 +67,8 @@ class ManyConditions(Condition):
         Args:
             conditions (List[Condition]): The conditions to add.
         """
-        self._conditions.extend(conditions)
+        for condition in conditions:
+            self.add_condition(condition)
 
 class AllConditions(ManyConditions):
     """
@@ -183,9 +181,7 @@ class StateEntryDurationCondition(MonitoredStateCondition):
 
     def __init__(self, duration: float, monitored_state: MonitoredState, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
-        self._duration: float = duration
-        self.monitored_state: MonitoredState = monitored_state
-        self.inverse: bool = inverse
+        self.__duration: float = duration
 
     @property
     def duration(self) -> float:
@@ -195,7 +191,7 @@ class StateEntryDurationCondition(MonitoredStateCondition):
         Returns:
             float: The duration threshold.
         """
-        return self._duration
+        return self.__duration
     
     @duration.setter
     def duration(self, duration: float) -> None:
@@ -205,7 +201,9 @@ class StateEntryDurationCondition(MonitoredStateCondition):
         Args:
             duration (float): The new duration threshold.
         """
-        self._duration: float = duration
+        if not isinstance(duration, (float)):
+            raise ValueError("The duration must be a float.")
+        self.__duration: float = duration
 
     def _compare(self) -> bool:
         """
@@ -231,9 +229,9 @@ class StateEntryCountCondition(MonitoredStateCondition):
 
     def __init__(self, expected_count: int, monitored_state: MonitoredState, auto_reset: bool, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
-        self.__ref_count = monitored_state.entry_count
-        self.__expected_count = expected_count
-        self.__auto_reset = auto_reset
+        self.__ref_count: int = monitored_state.entry_count
+        self.__expected_count: int = expected_count
+        self.__auto_reset: bool = auto_reset
 
     @property
     def expected_count(self) -> int:
@@ -262,7 +260,8 @@ class StateEntryCountCondition(MonitoredStateCondition):
         Returns:
             bool: True if the condition is met, False otherwise.
         """
-        return self._monitored_state.entry_count - self.__ref_count >= self.__expected_count
+        # return self._monitored_state.entry_count - self.__ref_count >= self.__expected_count
+        return self.__ref_count >= self.__expected_count
     
     def reset_count(self) -> None:
         """
@@ -367,7 +366,7 @@ class TimedCondition(Condition):
     Cette classe permet de créer une condition qui évalue à True après que le temps spécifié se soit écoulé.
     
     Attributs :
-        __duration (float): La durée après laquelle la condition devient True.
+        ___duration (float): La durée après laquelle la condition devient True.
         __counter_duration (float): Compteur utilisé pour mesurer le temps écoulé.
         __time_reference (float): Point de référence temporel pour le début du comptage.
     """
