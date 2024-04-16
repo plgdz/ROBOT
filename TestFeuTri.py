@@ -10,21 +10,21 @@ class TestActionState(unittest.TestCase):
         state = ActionState()
         action = Mock()
         state.add_entering_action(action)
-        state._do_entering_action()
+        state._exec_entering_action() # exec instead of do cuz exec calls do in state
         action.assert_called_once()
 
     def test_add_in_state_action(self):
         state = ActionState()
         action = Mock()
         state.add_in_state_action(action)
-        state._do_in_state_action()
+        state._exec_in_state_action() 
         action.assert_called_once()
 
     def test_add_exiting_action(self):
         state = ActionState()
         action = Mock()
         state.add_exiting_action(action)
-        state._do_exiting_action()
+        state._exec_exiting_action()
         action.assert_called_once()
 
     def test_add_entering_action_raises_type_error(self):
