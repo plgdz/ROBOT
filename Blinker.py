@@ -139,6 +139,22 @@ class Blinker(FiniteStateMachine):
         else:
             raise ValueError("turn_on takes at most 1 argument")
         
+    def blink(self, **kwargs) -> None:
+        first_case = {'cycle_duration', 'percent_on', 'begin_on'}
+        second_case = {'total_duration', 'cycle_duration', 'percent_on', 'begin_on', 'end_off'}
+        third_case = {'total_duration', 'n_cycle', 'percent_on', 'begin_on', 'end_off'}
+        fourth_case = {'n_cycle', 'cycle_duration', 'percent_on', 'begin_on', 'end_off'}
+
+        if first_case <= set(kwargs.keys()):
+            pass
+        elif second_case <= set(kwargs.keys()):
+            pass
+        elif third_case <= set(kwargs.keys()):
+            pass
+        elif fourth_case <= set(kwargs.keys()):
+            pass
+        else:
+            raise ValueError(f"Invalid arguments, kwargs must be \n\t - {first_case}, \n\t - {second_case}, \n\t - {third_case}, \n\t - {fourth_case}")
 
 
 
