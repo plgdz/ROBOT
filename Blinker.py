@@ -51,6 +51,56 @@ class Blinker(FiniteStateMachine):
         from_on_duration_to_off.next_state(self.__off)
         self.__on_duration.add_transition(from_on_duration_to_off)
         
+        # third transition : from blink_off to blink_on
+        self.sedc_blink_off = StateEntryDurationCondition(0, self.__blink_off)
+        from_blink_off_to_blink_on = ConditionalTransition(self.sedc_blink_off)
+        from_blink_off_to_blink_on.next_state(self.__blink_on)
+        self.__blink_off.add_transition(from_blink_off_to_blink_on)
+        
+        # fourth transition : from blink_on to blink_off
+        self.sedc_blink_on = StateEntryDurationCondition(0, self.__blink_on)
+        from_blink_on_to_blink_off = ConditionalTransition(self.sedc_blink_on)
+        from_blink_on_to_blink_off.next_state(self.__blink_off)
+        self.__blink_on.add_transition(from_blink_on_to_blink_off)
+        
+        # fifth transition : from blink_begin to blink_off & from blink_begin to blink_on
+        self.svc_blink_begin = StateValueCondition(0, self.__blink_begin)
+        from_blink_begin_to_blink_off = ConditionalTransition(self.svc_blink_begin)
+        from_blink_begin_to_blink_on = ConditionalTransition(self.svc_blink_begin)
+        from_blink_begin_to_blink_off.next_state(self.__blink_off)
+        from_blink_begin_to_blink_on.next_state(self.__blink_on)
+        self.__blink_begin.add_transition(from_blink_begin_to_blink_off)
+        self.__blink_begin.add_transition(from_blink_begin_to_blink_on)
+        
+        # State entry condition sur le blink_stop_begin
+        self.sedc_blink_stop_begin = StateEntryDurationCondition(0, self.__blink_stop_begin)
+        from_blink_stop_begin_to_blink_stop_end = ConditionalTransition(self.sedc_blink_stop_begin)
+        from_blink_stop_begin_to_blink_stop_end.next_state(self.__blink_stop_end)
+        
+        # sixth transition : from blink_stop_off to blink_stop_on
+        self.sedc_blink_stop_off = StateEntryDurationCondition(0, self.__blink_stop_off)
+        from_blink_stop_off_to_blink_stop_on = ConditionalTransition(self.sedc_blink_stop_off)
+        from_blink_stop_off_to_blink_stop_on.next_state(self.__blink_stop_on)
+        self.__blink_stop_off.add_transition(from_blink_stop_begin_to_blink_stop_end)
+        self.__blink_stop_off.add_transition(from_blink_stop_off_to_blink_stop_on)
+        
+        # seventh transition : from blink_stop_on to blink_stop_off
+        self.sedc_blink_stop_on = StateEntryDurationCondition(0, self.__blink_stop_on)
+        from_blink_stop_on_to_blink_stop_off = ConditionalTransition(self.sedc_blink_stop_on)
+        from_blink_stop_on_to_blink_stop_off.next_state(self.__blink_stop_off)
+        self.__blink_stop_on.add_transition(from_blink_stop_begin_to_blink_stop_end)
+        self.__blink_stop_on.add_transition(from_blink_stop_on_to_blink_stop_off)
+        
+        # eight transition : from blink_stop_begin to blink_stop_off & from blink_stop_begin to blink_stop_on
+        self.svc_blink_stop_begin = StateValueCondition(0, self.__blink_stop_begin)
+        from_blink_stop_begin_to_blink_stop_off = ConditionalTransition(self.svc_blink_stop_begin)
+        from_blink_stop_begin_to_blink_stop_on = ConditionalTransition(self.svc_blink_stop_begin)
+        from_blink_stop_begin_to_blink_stop_off.next_state(self.__blink_stop_off)
+        from_blink_stop_begin_to_blink_stop_on.next_state(self.__blink_stop_on)
+        self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_off)
+        self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_on)
+        
+        
         
     @property
     def is_off(self) -> bool:
@@ -68,8 +118,6 @@ class Blinker(FiniteStateMachine):
     def is_on(self, value) -> None:
         raise ValueError("is_on is a read-only property")
     
-
-    
     def turn_off(self, *args) -> None:
         if len(args) == 1:
             self.transit_to(self.__off)
@@ -85,5 +133,13 @@ class Blinker(FiniteStateMachine):
         elif len(args) == 2:
             self.sedc_on_duration.duration = args[2]
             self.transit_to(self.__on_duration)
+        else:
+            raise ValueError("turn_on takes at most 1 argument")
+        
+    def blink(self, *args):
+        if len(args) == 4:
+            self.transit_to(self.__blink_begin)
+        elif len(args) == 6:
+            self.transit_to(self.__blink_stop_begin)
         else:
             raise ValueError("turn_on takes at most 1 argument")
