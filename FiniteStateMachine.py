@@ -83,11 +83,13 @@ class FiniteStateMachine:
     def _transit_by(self, transition : Transition) -> None:
         self.current_applicative_state._exec_exiting_action()
         transition._exec_transiting_action()
-        self.transit_to(transition.next_state)
+        self.current_applicative_state = transition.next_state
         self.current_applicative_state._exec_entering_action()
 
     def transit_to(self, state : State) -> None:
+        self.current_applicative_state._exec_exiting_action()
         self.current_applicative_state = state
+        self.current_applicative_state._exec_entering_action()
         
     def track(self) -> bool:
         transition = self.current_applicative_state.transiting()
