@@ -107,7 +107,7 @@ class Blinker(FiniteStateMachine):
         
     @property
     def is_off(self) -> bool:
-        return self.current_operational_state != self.OperationalState.RUNNING
+        return True if self.current_operational_state == self.__off else False
     
     @is_off.setter
     def is_off(self, value) -> None:
@@ -115,7 +115,7 @@ class Blinker(FiniteStateMachine):
     
     @property
     def is_on(self) -> bool:
-        return self.current_operational_state == self.OperationalState.RUNNING
+        return True if self.current_operational_state == self.__on else False
     
     @is_on.setter
     def is_on(self, value) -> None:
@@ -140,26 +140,30 @@ class Blinker(FiniteStateMachine):
             raise ValueError("turn_on takes at most 1 argument")
         
 
-if __name__ == "__main__":
-    def off_state_generator() -> MonitoredState:
-        off = MonitoredState()
-        off.add_entering_action(lambda: print("Entering Off"))
-        off.add_in_state_action(lambda: print("Off"))
-        off.add_exiting_action(lambda: print("Exiting Off"))
-        return off
+
+
+
+
+# if __name__ == "__main__":
+#     def off_state_generator() -> MonitoredState:
+#         off = MonitoredState()
+#         off.add_entering_action(lambda: print("Entering Off"))
+#         off.add_in_state_action(lambda: print("Off"))
+#         off.add_exiting_action(lambda: print("Exiting Off"))
+#         return off
     
-    def on_state_generator() -> MonitoredState:
-        on = MonitoredState()
-        on.add_entering_action(lambda: print("Entering On"))
-        on.add_in_state_action(lambda: print("On"))
-        on.add_exiting_action(lambda: print("Exiting On"))
-        return on
+#     def on_state_generator() -> MonitoredState:
+#         on = MonitoredState()
+#         on.add_entering_action(lambda: print("Entering On"))
+#         on.add_in_state_action(lambda: print("On"))
+#         on.add_exiting_action(lambda: print("Exiting On"))
+#         return on
     
-    blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
+#     blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
     
-    blinker.track()
-    blinker.turn_on(duration=10.0)
-    blinker.start(reset=False, time_budget=1000)
+#     blinker.track()
+#     blinker.turn_on(duration=10.0)
+#     blinker.start(reset=False, time_budget=1000)
   
     
 

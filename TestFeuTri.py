@@ -5,7 +5,7 @@ from State import MonitoredState, ActionState
 from Transition import ConditionalTransition, MonitoredTransition, ActionTransition
 from Condition import StateEntryDurationCondition, StateValueCondition
 
-class TestFeuTri(unittest.TestCase):
+class TestFeuTriValue(unittest.TestCase):
     def setUp(self) -> None:
         self.green = MonitoredState()
         self.green.custom_value = "Green"
