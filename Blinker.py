@@ -77,27 +77,38 @@ class Blinker(FiniteStateMachine):
         
         # sixth transition : from blink_stop_off to blink_stop_on
         self.sedc_blink_stop_off = StateEntryDurationCondition(0, self.__blink_stop_off)
-        from_blink_stop_off_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.sedc_blink_stop_off)
-        self.__blink_stop_off.add_transition(from_blink_stop_begin_to_blink_stop_end)
+        from_blink_stop_off_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.sedc_blink_stop_off)  
         self.__blink_stop_off.add_transition(from_blink_stop_off_to_blink_stop_on)
+            # from blink_stop_off to blink_stop_end
+        self.__blink_stop_off.add_transition(from_blink_stop_begin_to_blink_stop_end)
         
         # seventh transition : from blink_stop_on to blink_stop_off
         self.sedc_blink_stop_on = StateEntryDurationCondition(0, self.__blink_stop_on)
         from_blink_stop_on_to_blink_stop_off = ConditionalTransition(next_state=self.__blink_stop_off, condition=self.sedc_blink_stop_on)
-        self.__blink_stop_on.add_transition(from_blink_stop_begin_to_blink_stop_end)
         self.__blink_stop_on.add_transition(from_blink_stop_on_to_blink_stop_off)
+            # from blink_stop_on to blink_stop_end
+        self.__blink_stop_on.add_transition(from_blink_stop_begin_to_blink_stop_end)
         
         # eight transition : from blink_stop_begin to blink_stop_off & from blink_stop_begin to blink_stop_on
         self.svc_blink_stop_begin = StateValueCondition(0, self.__blink_stop_begin)
+            # from blink_stop_begin to blink_stop_off
         from_blink_stop_begin_to_blink_stop_off = ConditionalTransition(next_state=self.__blink_stop_off, condition=self.svc_blink_stop_begin)
-        from_blink_stop_begin_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.svc_blink_stop_begin)
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_off)
+            # from blink_stop_begin to blink_stop_on
+        from_blink_stop_begin_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.svc_blink_stop_begin)
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_on)
 
+        # ninth transition : from blink_stop_end to on / off
+        self.svc_blink_stop_end = StateValueCondition(0, self.__blink_stop_end)
+            # from blink_stop_end to on
+        from_blink_stop_end_to_on = ConditionalTransition(next_state=self.__on, condition=self.svc_blink_stop_end)
+        self.__blink_stop_end.add_transition(from_blink_stop_end_to_on)
+            # from blink_stop_end to off
+        from_blink_stop_end_to_off = ConditionalTransition(next_state=self.__off, condition=self.svc_blink_stop_end)
+        self.__blink_stop_end.add_transition(from_blink_stop_end_to_off)
 
-        
     
-         #  init layout
+        #  init layout
         layout = FiniteStateMachine.Layout()
         layout.add_states([
             self.__off, self.__on, self.__off_duration, self.__on_duration,
