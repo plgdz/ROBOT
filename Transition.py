@@ -21,9 +21,6 @@ class Transition:
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
-        from State import State
-        if not isinstance(next_state, (State, type(None))):
-            raise TypeError("next_state doit être une instance de State.")
         self.next_state = next_state
 
     @property
@@ -44,7 +41,7 @@ class Transition:
         """
         from State import State
         if not isinstance(next_state, State):
-            raise TypeError("next_state doit être une instance de State.")
+            raise TypeError(f"next_state doit être une instance de State. Type actuel : {type(next_state)}")
         self.__next_state = next_state
 
     @property
@@ -105,7 +102,8 @@ class ConditionalTransition(Transition):
     def condition(self, condition: 'Condition') -> None:
         self.__condition : 'Condition' = condition
     
-    def is_transiting(self) -> bool:
+    @property
+    def transiting(self) -> bool:
         return bool(self.__condition)
 
 class ActionTransition(Transition):

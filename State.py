@@ -92,7 +92,7 @@ class State:
             raise TypeError("La transition doit être une instance de Transition.")
         if transition in self.__transitions:
             raise ValueError("La transition est déjà ajoutée.")
-        self.__transitions.add(transition)
+        self.__transitions.append(transition)
 
     def _exec_entering_action(self) -> None:
         """Exécute l'action associée à l'entrée dans l'état."""

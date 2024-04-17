@@ -41,15 +41,16 @@ class Blinker(FiniteStateMachine):
         
         # first transition : from off duration to on
         self.sedc_off_duration = StateEntryDurationCondition(0, self.__off_duration)
-        from_off_duration_to_on = ConditionalTransition(self.sedc_off_duration)
-        from_off_duration_to_on.next_state(self.__on)
+        from_off_duration_to_on = ConditionalTransition(next_state=self.__on, condition=self.sedc_off_duration)
+        # from_off_duration_to_on.next_state(self.__on)
         self.__off_duration.add_transition(from_off_duration_to_on)
         
         # second transition : from on duration to off
         self.sedc_on_duration = StateEntryDurationCondition(0, self.__on_duration)
-        from_on_duration_to_off = ConditionalTransition(self.sedc_on_duration)
-        from_on_duration_to_off.next_state(self.__off)
+        from_on_duration_to_off = ConditionalTransition(next_state=self.__off, condition=self.sedc_on_duration)
+        # from_on_duration_to_off.next_state(self.__off)
         self.__on_duration.add_transition(from_on_duration_to_off)
+<<<<<<< Updated upstream
         
         # third transition : from blink_off to blink_on
         self.sedc_blink_off = StateEntryDurationCondition(0, self.__blink_off)
@@ -101,6 +102,17 @@ class Blinker(FiniteStateMachine):
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_on)
         
         
+=======
+
+         #  init layout
+        layout = FiniteStateMachine.Layout()
+        layout.add_states([self.__off, self.__on, self.__off_duration, self.__on_duration])
+        layout.initial_state = self.__off
+
+        super().__init__(layout)
+
+        #  init layout
+>>>>>>> Stashed changes
         
     @property
     def is_off(self) -> bool:
@@ -128,14 +140,15 @@ class Blinker(FiniteStateMachine):
             raise ValueError("turn_off takes at most 1 argument")
         
     def turn_on(self, *args) -> None:
-        if len(args) == 1:
+        if len(args) == 0:
             self.transit_to(self.__on)
-        elif len(args) == 2:
-            self.sedc_on_duration.duration = args[2]
+        elif len(args) == 1:
+            self.sedc_on_duration.duration = args[0]
             self.transit_to(self.__on_duration)
         else:
             raise ValueError("turn_on takes at most 1 argument")
         
+<<<<<<< Updated upstream
     def blink(self, *args):
         if len(args) == 4:
             self.transit_to(self.__blink_begin)
@@ -143,3 +156,27 @@ class Blinker(FiniteStateMachine):
             self.transit_to(self.__blink_stop_begin)
         else:
             raise ValueError("turn_on takes at most 1 argument")
+=======
+if __name__ == "__main__":
+    def off_state_generator() -> MonitoredState:
+        off = MonitoredState()
+        off.add_entering_action(lambda: print("Entering Off"))
+        off.add_in_state_action(lambda: print("Off"))
+        off.add_exiting_action(lambda: print("Exiting Off"))
+        return off
+    
+    def on_state_generator() -> MonitoredState:
+        on = MonitoredState()
+        on.add_entering_action(lambda: print("Entering On"))
+        on.add_in_state_action(lambda: print("On"))
+        on.add_exiting_action(lambda: print("Exiting On"))
+        return on
+    
+    blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
+    
+    blinker.track()
+    blinker.turn_on(10.0)
+    blinker.start(reset=False, time_budget=1000)
+  
+    
+>>>>>>> Stashed changes

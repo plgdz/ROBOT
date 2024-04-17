@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from Transition import Transition
-from State import State
+from State import State, MonitoredState
 from time import perf_counter
 from typing import List
 
@@ -17,9 +17,9 @@ class FiniteStateMachine:
 
         @initial_state.setter
         def initial_state(self, state) -> None:
-            if(isinstance(state, State)):
+            if state is not None and not isinstance(state, State):
                 raise ValueError("initial_state must be of type State")
-            if state not in self.__states:
+            if state is not None and state not in self.__states:
                 raise ValueError("initial_state must be in the added list of states")
             self.__initial_state = state
         
@@ -35,11 +35,11 @@ class FiniteStateMachine:
             raise ValueError("valid is a read-only property")
         
         def add_state(self, state) -> None:
-            if(isinstance(state, State)):
-                raise ValueError("state must be of type State")
+            if(not isinstance(state, State)):
+                raise ValueError("state must be of type State. Actual type is " + str(type(state)) + ".")
             if state in self.__states:
                 raise ValueError("state must be unique")
-            self.__states.add(state)
+            self.__states.append(state)
 
         def add_states(self, states) -> None:
             for state in states:
@@ -52,9 +52,8 @@ class FiniteStateMachine:
         TERMINAL_REACHED = auto()
 
     def __init__(self, layout: Layout, uninitialized: bool = True):
-
         self.__layout = layout
-        self.__current_applicative_state = None
+        self.__current_applicative_state = layout.initial_state
         self.__current_operational_state = self.OperationalState.UNINITIALIZED
 
         if not uninitialized:
@@ -83,16 +82,20 @@ class FiniteStateMachine:
     def _transit_by(self, transition : Transition) -> None:
         self.current_applicative_state._exec_exiting_action()
         transition._exec_transiting_action()
-        self.current_applicative_state = transition.next_state
+        self.__current_applicative_state = transition.next_state
         self.current_applicative_state._exec_entering_action()
 
     def transit_to(self, state : State) -> None:
         self.current_applicative_state._exec_exiting_action()
-        self.current_applicative_state = state
+        self.__current_applicative_state = state
         self.current_applicative_state._exec_entering_action()
         
     def track(self) -> bool:
-        transition = self.current_applicative_state.transiting()
+        transition = None
+        if self.current_applicative_state is not None:
+            transition = self.current_applicative_state.transiting
+        else:
+            raise ValueError("current_applicative_state is None")
         if transition:
             self._transit_by(transition)
         else:
