@@ -1,81 +1,60 @@
 import unittest
-from State import State, ActionState, MonitoredState
-from typing import Callable, List, Optional
-from unittest.mock import Mock
 
+from FiniteStateMachine import FiniteStateMachine
+from State import MonitoredState, ActionState
+from Transition import ConditionalTransition, MonitoredTransition, ActionTransition
+from Condition import StateEntryDurationCondition, StateValueCondition
 
-class TestActionState(unittest.TestCase):
+class TestFeuTri(unittest.TestCase):
+    def setUp(self) -> None:
+        self.green = MonitoredState()
+        self.green.custom_value = "Green"
+        self.green.add_in_state_action(lambda : print(f"Green", end="                  \r"))
 
-    def test_add_entering_action(self):
-        state = ActionState()
-        action = Mock()
-        state.add_entering_action(action)
-        state._exec_entering_action() # exec instead of do cuz exec calls do in state
-        action.assert_called_once()
+        self.yellow = MonitoredState()
+        self.yellow.custom_value = "Yellow"
+        self.yellow.add_in_state_action(lambda : print(f"Yellow", end="                  \r"))
 
-    def test_add_in_state_action(self):
-        state = ActionState()
-        action = Mock()
-        state.add_in_state_action(action)
-        state._exec_in_state_action() 
-        action.assert_called_once()
+        self.red = MonitoredState()
+        self.red.custom_value = "Red"
+        self.red.add_in_state_action(lambda : print(f"Red", end="                  \r"))
 
-    def test_add_exiting_action(self):
-        state = ActionState()
-        action = Mock()
-        state.add_exiting_action(action)
-        state._exec_exiting_action()
-        action.assert_called_once()
+        self.green_to_yellow = ConditionalTransition(next_state=self.yellow, condition=StateValueCondition(expected_value='Green', monitored_state=self.green))
+        self.green.add_transition(self.green_to_yellow)
 
-    def test_add_entering_action_raises_type_error(self):
-        state = ActionState()
-        with self.assertRaises(TypeError):
-            state.add_entering_action("not a callable")
+        self.yellow_to_red = ConditionalTransition(next_state=self.red, condition=StateValueCondition(expected_value='Yellow', monitored_state=self.yellow))
+        self.yellow.add_transition(self.yellow_to_red)
 
-    def test_add_in_state_action_raises_type_error(self):
-        state = ActionState()
-        with self.assertRaises(TypeError):
-            state.add_in_state_action("not a callable")
+        self.red_to_green = ConditionalTransition(next_state=self.green, condition=StateValueCondition(expected_value='Red', monitored_state=self.red))
+        self.red.add_transition(self.red_to_green)
 
-    def test_add_exiting_action_raises_type_error(self):
-        state = ActionState()
-        with self.assertRaises(TypeError):
-            state.add_exiting_action("not a callable")
+        
+        self.layout = FiniteStateMachine.Layout()
+        self.layout.add_states([self.green, self.yellow, self.red])
+        self.layout.initial_state = self.green
+        self.feu = FiniteStateMachine(layout=self.layout)
 
-class TestMonitoredState(unittest.TestCase):
-    def setUp(self):
-        # Initialisation standard pour chaque test
-        self.monitored_state = MonitoredState()
+    def test_green_to_yellow(self):
+        self.feu.track()
+        self.assertEqual(self.feu.current_applicative_state, self.yellow)
 
-    def test_entry_count_increment(self):
-        # Vérifie que le compteur d'entrées est bien incrémenté
-        initial_count = self.monitored_state.entry_count
-        self.monitored_state._exec_entering_action()
-        self.assertEqual(self.monitored_state.entry_count, initial_count + 1)
+    def test_yellow_to_red(self):
+        self.feu.track()
+        self.feu.track()
+        self.assertEqual(self.feu.current_applicative_state, self.red)
 
-    def test_last_entry_time_update(self):
-        # Vérifie que le compteur de dernière entrée est mis à jour
-        self.monitored_state._exec_entering_action()
-        self.assertNotEqual(self.monitored_state.last_entry_time, 0)
+    def test_red_to_green(self):
+        self.feu.track()
+        self.feu.track()
+        self.feu.track()
+        self.assertEqual(self.feu.current_applicative_state, self.green)
 
-    def test_last_exit_time_update(self):
-        # Vérifie que le compteur de dernière sortie est mis à jour
-        self.monitored_state._exec_exiting_action()
-        self.assertNotEqual(self.monitored_state.last_exit_time, 0)
-
-    def test_reset_entry_count(self):
-        # Teste la réinitialisation du compteur d'entrées
-        self.monitored_state._exec_entering_action()
-        self.monitored_state.reset_entry_count()
-        self.assertEqual(self.monitored_state.entry_count, 0)
-
-    def test_reset_last_times(self):
-        # Teste la réinitialisation des compteurs de temps
-        self.monitored_state._exec_entering_action()
-        self.monitored_state._exec_exiting_action()
-        self.monitored_state.reset_last_times()
-        self.assertEqual(self.monitored_state.last_entry_time, 0)
-        self.assertEqual(self.monitored_state.last_exit_time, 0)
+    def test_red_to_green_to_yellow(self):
+        self.feu.track()
+        self.feu.track()
+        self.feu.track()
+        self.feu.track()
+        self.assertEqual(self.feu.current_applicative_state, self.yellow)
 
 if __name__ == "__main__":
     unittest.main()

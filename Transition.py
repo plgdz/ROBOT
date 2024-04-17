@@ -81,7 +81,7 @@ class Transition:
         Cette méthode doit être surchargée par les sous-classes pour implémenter l'action spécifique
         de la transition.
         """
-        print("fdsf")
+        pass
 
 
 class ConditionalTransition(Transition):
