@@ -50,7 +50,7 @@ class Blinker(FiniteStateMachine):
         from_on_duration_to_off = ConditionalTransition(next_state=self.__off, condition=self.sedc_on_duration)
         # from_on_duration_to_off.next_state(self.__off)
         self.__on_duration.add_transition(from_on_duration_to_off)
-<<<<<<< Updated upstream
+
         
         # third transition : from blink_off to blink_on
         self.sedc_blink_off = StateEntryDurationCondition(0, self.__blink_off)
@@ -101,18 +101,17 @@ class Blinker(FiniteStateMachine):
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_off)
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_on)
         
-        
-=======
-
+    
          #  init layout
         layout = FiniteStateMachine.Layout()
-        layout.add_states([self.__off, self.__on, self.__off_duration, self.__on_duration])
+        layout.add_states([
+            self.__off, self.__on, self.__off_duration, self.__on_duration,
+            self.__blink_off, self.__blink_on, self.__blink_begin, self.__blink_stop_begin,
+            self.__blink_stop_off, self.__blink_stop_on, self.__blink_stop_end])
         layout.initial_state = self.__off
 
         super().__init__(layout)
 
-        #  init layout
->>>>>>> Stashed changes
         
     @property
     def is_off(self) -> bool:
@@ -148,15 +147,7 @@ class Blinker(FiniteStateMachine):
         else:
             raise ValueError("turn_on takes at most 1 argument")
         
-<<<<<<< Updated upstream
-    def blink(self, *args):
-        if len(args) == 4:
-            self.transit_to(self.__blink_begin)
-        elif len(args) == 6:
-            self.transit_to(self.__blink_stop_begin)
-        else:
-            raise ValueError("turn_on takes at most 1 argument")
-=======
+
 if __name__ == "__main__":
     def off_state_generator() -> MonitoredState:
         off = MonitoredState()
@@ -179,4 +170,4 @@ if __name__ == "__main__":
     blinker.start(reset=False, time_budget=1000)
   
     
->>>>>>> Stashed changes
+
