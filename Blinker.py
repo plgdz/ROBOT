@@ -163,7 +163,7 @@ class Blinker(FiniteStateMachine):
             # set the duration of the blink_off and blink_on states
             self.sedc_blink_on.duration = kwargs['cycle_duration'] * kwargs['percent_on']
             self.sedc_blink_off.duration = kwargs['cycle_duration'] - self.sedc_blink_on.duration
-
+            
             # set the starting state of the blink
             self.__blink_begin.custom_value = kwargs['begin_on']
             self.svc_blink_begin.expected_value = kwargs['begin_on']
