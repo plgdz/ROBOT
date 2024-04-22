@@ -26,7 +26,7 @@ class FiniteStateMachine:
         @property
         def valid(self) -> bool:
             for state in self.__states:
-                if not state.valid():
+                if not state.valid:
                     return False
             return self.__initial_state is not None
         
@@ -52,6 +52,9 @@ class FiniteStateMachine:
         TERMINAL_REACHED = auto()
 
     def __init__(self, layout: Layout, uninitialized: bool = True):
+        if not layout.valid:
+            raise ValueError("layout is not valid")
+
         self.__layout = layout
         self.__current_applicative_state = layout.initial_state
         self.__current_operational_state = self.OperationalState.UNINITIALIZED
@@ -91,15 +94,16 @@ class FiniteStateMachine:
         self.current_applicative_state._exec_entering_action()
         
     def track(self) -> bool:
-        transition = None
-        if self.current_applicative_state is not None:
-            transition = self.current_applicative_state.transiting
-        else:
+        if self.current_applicative_state is None:
             raise ValueError("current_applicative_state is None")
+        
+        transition = self.current_applicative_state.transiting
+            
         if transition:
             self._transit_by(transition)
         else:
             self.current_applicative_state._exec_in_state_action()
+
         if self.current_applicative_state.terminal:
             self.__current_operational_state = self.OperationalState.TERMINAL_REACHED
             return False
@@ -109,11 +113,12 @@ class FiniteStateMachine:
     def start(self, reset: bool = True, time_budget: float = None):
         if reset:
             self.reset()
-
         self.__current_operational_state = self.OperationalState.RUNNING
+        self.current_applicative_state._exec_entering_action()
         run = True
         init_time = perf_counter()
-        while time_budget > perf_counter() - init_time and run:
+
+        while ((time_budget is None) or (time_budget > perf_counter() - init_time)) and run:
             run = self.track()
             if not run:
                 self.stop()

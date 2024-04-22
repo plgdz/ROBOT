@@ -61,6 +61,8 @@ class ManyConditions(Condition):
         Args:
             condition (Condition): The condition to add.
         """
+        if not isinstance(condition, Condition):
+            raise TypeError("condition must be of type Condition")
         self._conditions.append(condition)
 
     def add_conditions(self, conditions: List[Condition]) -> None:
@@ -70,7 +72,8 @@ class ManyConditions(Condition):
         Args:
             conditions (List[Condition]): The conditions to add.
         """
-        self._conditions.extend(conditions)
+        for condition in conditions:
+            self.add_condition(condition)
 
 class AllConditions(ManyConditions):
     """
@@ -184,8 +187,6 @@ class StateEntryDurationCondition(MonitoredStateCondition):
     def __init__(self, duration: float, monitored_state: MonitoredState, inverse: bool = False) -> None:
         super().__init__(monitored_state, inverse)
         self._duration: float = duration
-        self.monitored_state: MonitoredState = monitored_state
-        self.inverse: bool = inverse
 
     @property
     def duration(self) -> float:

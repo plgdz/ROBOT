@@ -92,7 +92,7 @@ class ConditionalTransition(Transition):
 
     @property
     def valid(self) -> bool:
-        return (self.__condition is not None) and super().valid()
+        return (self.__condition is not None) and super().valid
     
     @property
     def condition(self) -> 'Condition':
@@ -106,17 +106,17 @@ class ConditionalTransition(Transition):
     def transiting(self) -> bool:
         return bool(self.__condition)
 
-class ActionTransition(Transition):
+class ActionTransition(ConditionalTransition):
 
     Action = Callable[[], None]
 
-    def __init__(self, next_state: 'State' = None) -> None:
+    def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
         """Initialise une instance de ActionTransition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
-        super().__init__(next_state)
+        super().__init__(next_state, condition)
         self.__transiting_actions : List[self.Action] = []
 
     def _do_transiting_action(self) -> None:
@@ -137,13 +137,13 @@ class ActionTransition(Transition):
         
 class MonitoredTransition(ActionTransition):
     
-    def __init__(self, next_state: 'State' = None) -> None:
+    def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
         """Initialise une instance de MonitoredTransition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
         """
-        super().__init__(next_state)
+        super().__init__(next_state, condition)
         self.__transit_count : int = 0
         self.__last_transit_time : float = 0
         self.custom_value : any = None

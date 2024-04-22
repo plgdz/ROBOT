@@ -5,15 +5,6 @@ from Transition import ConditionalTransition, Transition, MonitoredTransition, A
 from Condition import StateEntryDurationCondition, StateValueCondition
 from time import time
 
-# create state generator with no argumnents that return new state
-# class StateGenerator:
-#     def __init__(self) -> None:
-#         self.__state = ActionState()
-#         self.__state.add_in_state_action("Test")
-
-#     def __call__(self) -> State:
-#         return self.__state
-
 class Blinker(FiniteStateMachine):
     
     StateGenerator = Callable[[], MonitoredState]
@@ -42,30 +33,36 @@ class Blinker(FiniteStateMachine):
         # first transition : from off duration to on
         self.sedc_off_duration = StateEntryDurationCondition(0, self.__off_duration)
         from_off_duration_to_on = ConditionalTransition(next_state=self.__on, condition=self.sedc_off_duration)
-        # from_off_duration_to_on.next_state(self.__on)
+
         self.__off_duration.add_transition(from_off_duration_to_on)
+
         
         # second transition : from on duration to off
         self.sedc_on_duration = StateEntryDurationCondition(0, self.__on_duration)
         from_on_duration_to_off = ConditionalTransition(next_state=self.__off, condition=self.sedc_on_duration)
-        # from_on_duration_to_off.next_state(self.__off)
+
         self.__on_duration.add_transition(from_on_duration_to_off)
 
         
         # third transition : from blink_off to blink_on
         self.sedc_blink_off = StateEntryDurationCondition(0, self.__blink_off)
         from_blink_off_to_blink_on = ConditionalTransition(next_state=self.__blink_on, condition=self.sedc_blink_off)
+
         self.__blink_off.add_transition(from_blink_off_to_blink_on)
+
         
         # fourth transition : from blink_on to blink_off
         self.sedc_blink_on = StateEntryDurationCondition(0, self.__blink_on)
         from_blink_on_to_blink_off = ConditionalTransition(next_state=self.__blink_off, condition=self.sedc_blink_on)
+
         self.__blink_on.add_transition(from_blink_on_to_blink_off)
+
         
         # fifth transition : from blink_begin to blink_off & from blink_begin to blink_on
         self.svc_blink_begin = StateValueCondition(0, self.__blink_begin)
         from_blink_begin_to_blink_off = ConditionalTransition(next_state=self.__blink_off, condition=self.svc_blink_begin)
         from_blink_begin_to_blink_on = ConditionalTransition(next_state=self.__blink_on, condition=self.svc_blink_begin)
+
         self.__blink_begin.add_transition(from_blink_begin_to_blink_off)
         self.__blink_begin.add_transition(from_blink_begin_to_blink_on)
 
@@ -79,31 +76,34 @@ class Blinker(FiniteStateMachine):
         self.sedc_blink_stop_off = StateEntryDurationCondition(0, self.__blink_stop_off)
         from_blink_stop_off_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.sedc_blink_stop_off)  
         self.__blink_stop_off.add_transition(from_blink_stop_off_to_blink_stop_on)
-            # from blink_stop_off to blink_stop_end
+        # from blink_stop_off to blink_stop_end
         self.__blink_stop_off.add_transition(from_blink_stop_begin_to_blink_stop_end)
+
         
         # seventh transition : from blink_stop_on to blink_stop_off
         self.sedc_blink_stop_on = StateEntryDurationCondition(0, self.__blink_stop_on)
         from_blink_stop_on_to_blink_stop_off = ConditionalTransition(next_state=self.__blink_stop_off, condition=self.sedc_blink_stop_on)
         self.__blink_stop_on.add_transition(from_blink_stop_on_to_blink_stop_off)
-            # from blink_stop_on to blink_stop_end
+        # from blink_stop_on to blink_stop_end
         self.__blink_stop_on.add_transition(from_blink_stop_begin_to_blink_stop_end)
+
         
         # eight transition : from blink_stop_begin to blink_stop_off & from blink_stop_begin to blink_stop_on
         self.svc_blink_stop_begin = StateValueCondition(0, self.__blink_stop_begin)
-            # from blink_stop_begin to blink_stop_off
+        # from blink_stop_begin to blink_stop_off
         from_blink_stop_begin_to_blink_stop_off = ConditionalTransition(next_state=self.__blink_stop_off, condition=self.svc_blink_stop_begin)
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_off)
-            # from blink_stop_begin to blink_stop_on
+        # from blink_stop_begin to blink_stop_on
         from_blink_stop_begin_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.svc_blink_stop_begin)
         self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_on)
 
+
         # ninth transition : from blink_stop_end to on / off
         self.svc_blink_stop_end = StateValueCondition(0, self.__blink_stop_end)
-            # from blink_stop_end to on
+        # from blink_stop_end to on
         from_blink_stop_end_to_on = ConditionalTransition(next_state=self.__on, condition=self.svc_blink_stop_end)
         self.__blink_stop_end.add_transition(from_blink_stop_end_to_on)
-            # from blink_stop_end to off
+        # from blink_stop_end to off
         from_blink_stop_end_to_off = ConditionalTransition(next_state=self.__off, condition=self.svc_blink_stop_end)
         self.__blink_stop_end.add_transition(from_blink_stop_end_to_off)
 
@@ -111,9 +111,11 @@ class Blinker(FiniteStateMachine):
         #  init layout
         layout = FiniteStateMachine.Layout()
         layout.add_states([
-            self.__off, self.__on, self.__off_duration, self.__on_duration,
-            self.__blink_off, self.__blink_on, self.__blink_begin, self.__blink_stop_begin,
-            self.__blink_stop_off, self.__blink_stop_on, self.__blink_stop_end])
+            self.__off, self.__on,                                                                          # off and on states
+            self.__off_duration, self.__on_duration,                                                        # off and on duration states
+            self.__blink_begin, self.__blink_off, self.__blink_on,                                          # off and on blink states
+            self.__blink_stop_begin, self.__blink_stop_off, self.__blink_stop_on, self.__blink_stop_end])   # off and on blink stop states
+        
         layout.initial_state = self.__off
 
         super().__init__(layout)
@@ -124,7 +126,7 @@ class Blinker(FiniteStateMachine):
         return True if self.current_operational_state == self.__off else False
     
     @is_off.setter
-    def is_off(self, value) -> None:
+    def is_off(self) -> None:
         raise ValueError("is_off is a read-only property")
     
     @property
@@ -132,7 +134,7 @@ class Blinker(FiniteStateMachine):
         return True if self.current_operational_state == self.__on else False
     
     @is_on.setter
-    def is_on(self, value) -> None:
+    def is_on(self) -> None:
         raise ValueError("is_on is a read-only property")
     
     def turn_off(self, **kwargs) -> None:
@@ -183,26 +185,26 @@ class Blinker(FiniteStateMachine):
 
 
 
-# if __name__ == "__main__":
-#     def off_state_generator() -> MonitoredState:
-#         off = MonitoredState()
-#         off.add_entering_action(lambda: print("Entering Off"))
-#         off.add_in_state_action(lambda: print("Off"))
-#         off.add_exiting_action(lambda: print("Exiting Off"))
-#         return off
+if __name__ == "__main__":
+    def off_state_generator() -> MonitoredState:
+        off = MonitoredState()
+        off.add_entering_action(lambda: print("Entering Off"))
+        off.add_in_state_action(lambda: print("Off"))
+        off.add_exiting_action(lambda: print("Exiting Off"))
+        return off
     
-#     def on_state_generator() -> MonitoredState:
-#         on = MonitoredState()
-#         on.add_entering_action(lambda: print("Entering On"))
-#         on.add_in_state_action(lambda: print("On"))
-#         on.add_exiting_action(lambda: print("Exiting On"))
-#         return on
+    def on_state_generator() -> MonitoredState:
+        on = MonitoredState()
+        on.add_entering_action(lambda: print("Entering On"))
+        on.add_in_state_action(lambda: print("On"))
+        on.add_exiting_action(lambda: print("Exiting On"))
+        return on
     
-#     blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
+    blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
     
-#     blinker.track()
-#     blinker.turn_on(duration=10.0)
-#     blinker.start(reset=False, time_budget=1000)
+    blinker.track()
+    blinker.turn_on(duration=10.0)
+    blinker.start(reset=False, time_budget=1000)
   
     
 
