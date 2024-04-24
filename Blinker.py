@@ -12,6 +12,8 @@ class Blinker(FiniteStateMachine):
 
     def __init__(self, off_state_generator: StateGenerator, on_state_generator: StateGenerator) -> None:
         
+        default_value = 0
+
         # Implicite Monitored State
         # Off State
         self.__off = off_state_generator()      
@@ -36,41 +38,43 @@ class Blinker(FiniteStateMachine):
         self.__on.add_transition(ConditionalTransition(next_state=self.__on, condition=AlwaysTrueCondition()))
         
         # first transition : from off duration to on
-        self.sedc_off_duration = StateEntryDurationCondition(0, self.__off_duration)
+        self.sedc_off_duration = StateEntryDurationCondition(default_value, self.__off_duration)
         self.__off_duration.add_transition(ConditionalTransition(next_state=self.__on, condition=self.sedc_off_duration))
 
         # second transition : from on duration to off
-        self.sedc_on_duration = StateEntryDurationCondition(0, self.__on_duration)
+        self.sedc_on_duration = StateEntryDurationCondition(default_value, self.__on_duration)
         self.__on_duration.add_transition(ConditionalTransition(next_state=self.__off, condition=self.sedc_on_duration))
 
         # third transition : from blink_off to blink_on
-        self.sedc_blink_off = StateEntryDurationCondition(0, self.__blink_off)
+        self.sedc_blink_off = StateEntryDurationCondition(default_value, self.__blink_off)
         self.__blink_off.add_transition(ConditionalTransition(next_state=self.__blink_on, condition=self.sedc_blink_off))
 
         # fourth transition : from blink_on to blink_off
-        self.sedc_blink_on = StateEntryDurationCondition(0, self.__blink_on)
+        self.sedc_blink_on = StateEntryDurationCondition(default_value, self.__blink_on)
         self.__blink_on.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=self.sedc_blink_on))
 
         # fifth transition : from blink_begin to blink_off & from blink_begin to blink_on
         self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=StateValueCondition(False, self.__blink_begin)))
         self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_on, condition=StateValueCondition(True, self.__blink_begin)))
 
-        # -------------------------------------------------------------------------------
         # State entry condition sur le blink_stop_begin
         self.__blink_stop_begin.add_transition(ConditionalTransition(next_state=self.__blink_stop_off, condition=StateValueCondition(False, self.__blink_stop_begin)))
         self.__blink_stop_begin.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition=StateValueCondition(True, self.__blink_stop_begin)))
 
-        self.sedc_blink_stop_off = StateEntryDurationCondition(0, self.__blink_stop_off)
-        self.sedc_blink_stop_on = StateEntryDurationCondition(0, self.__blink_stop_on)
-
+        #from blink_stop_off to blink_stop_on
+        self.sedc_blink_stop_off = StateEntryDurationCondition(default_value, self.__blink_stop_off)
         self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition= self.sedc_blink_stop_off))
+        
+        #from blink_stop_on to blink_stop_off
+        self.sedc_blink_stop_on = StateEntryDurationCondition(default_value, self.__blink_stop_on)
         self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_off, condition= self.sedc_blink_stop_on))
 
-        self.sedc_blink_stop_begin = StateEntryDurationCondition(0, self.__blink_stop_begin)
-
+        #from blink_stop_on to blink_stop_end & from blink_stop_off to blink_stop_end
+        self.sedc_blink_stop_begin = StateEntryDurationCondition(default_value, self.__blink_stop_begin)
         self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=self.sedc_blink_stop_begin))
         self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=self.sedc_blink_stop_begin))
 
+        #from blink_stop_end to off & from blink_stop_end to on
         self.__blink_stop_end.add_transition(ConditionalTransition(next_state=self.__on, condition=StateValueCondition(True, self.__blink_stop_end)))
         self.__blink_stop_end.add_transition(ConditionalTransition(next_state=self.__off, condition=StateValueCondition(False, self.__blink_stop_end)))
 
@@ -123,6 +127,39 @@ class Blinker(FiniteStateMachine):
         
 
     def blink(self, **kwargs) -> None:
+        """
+        Fait clignoter le clignotant selon les paramètres spécifiés.
+
+        Args:
+            - Configuration 1:
+                * 'cycle_duration' (int): Durée totale d'un cycle de clignotement, en secondes.
+                * 'percent_on' (float): Pourcentage du cycle pendant lequel le clignotant est allumé.
+                * 'begin_on' (bool): Indique si le clignotant démarre en étant allumé.
+            - Configuration 2:
+                * 'total_duration' (int): Durée totale du clignotement, en secondes.
+                * 'cycle_duration' (int): Durée totale d'un cycle de clignotement, en secondes.
+                * 'percent_on' (float): Pourcentage du cycle pendant lequel le clignotant est allumé.
+                * 'begin_on' (bool): Indique si le clignotant démarre en étant allumé.
+                * 'end_off' (bool): Indique si le clignotant termine en étant éteint.
+            - Configuration 3:
+                * 'total_duration' (int): Durée totale du clignotement, en secondes.
+                * 'n_cycles' (int): Nombre de cycles de clignotement.
+                * 'percent_on' (float): Pourcentage du cycle pendant lequel le clignotant est allumé.
+                * 'begin_on' (bool): Indique si le clignotant démarre en étant allumé.
+                * 'end_off' (bool): Indique si le clignotant termine en étant éteint.
+            - Configuration 4:
+                * 'n_cycles' (int): Nombre de cycles de clignotement.
+                * 'cycle_duration' (int): Durée totale d'un cycle de clignotement, en secondes.
+                * 'percent_on' (float): Pourcentage du cycle pendant lequel le clignotant est allumé.
+                * 'begin_on' (bool): Indique si le clignotant démarre en étant allumé.
+                * 'end_off' (bool): Indique si le clignotant termine en étant éteint.
+
+        Raises:
+            ValueError: Si les arguments spécifiés sont invalides.
+        """
+
+        default_kwargs = {'cycle_duration': 1, 'percent_on': 0.5, 'begin_on': True, 'end_off': True}
+
         first_case = {'cycle_duration', 'percent_on', 'begin_on'}
         second_case = {'total_duration', 'cycle_duration', 'percent_on', 'begin_on', 'end_off'}
         third_case = {'total_duration', 'n_cycles', 'percent_on', 'begin_on', 'end_off'}
