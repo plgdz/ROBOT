@@ -182,15 +182,74 @@ class Blinker(FiniteStateMachine):
 
 class SideBlinkers():
 
-    
-
     class Side(Enum):
         LEFT = auto()
         RIGHT = auto()
         BOTH = auto()
-        LEFT_RECIPROCICAL = auto()
+        LEFT_RECIPROCAL = auto()
+        RIGHT_RECIPROCAL = auto()
 
+    def __init__(
+            self,
+            left_off_state_generator : Blinker.StateGenerator,
+            left_on_state_generator : Blinker.StateGenerator,
+            right_off_state_generator : Blinker.StateGenerator,
+            right_on_state_generator : Blinker.StateGenerator
+            ) -> None:
+        self.__left_blinker = Blinker(left_off_state_generator, left_on_state_generator)
+        self.__right_blinker = Blinker(right_off_state_generator, right_on_state_generator)
 
+    def turn_off(self, side: Side) -> None:
+        if side == side.LEFT:
+            self.__left_blinker.turn_off()
+        elif side == side.RIGHT:
+            self.__right_blinker.turn_off()
+        elif side == side.BOTH:
+            self.__left_blinker.turn_off()
+            self.__right_blinker.turn_off()
+        elif side == side.LEFT_RECIPROCAL:
+            self.__left_blinker.turn_off()
+            self.__right_blinker.turn_on()
+        elif side == side.RIGHT_RECIPROCAL:
+            self.__right_blinker.turn_off()
+            self.__left_blinker.turn_on()
+        else:
+            raise ValueError("Invalid side value")
+        
+    def turn_on(self, side: Side) -> None:
+        if side == side.LEFT:
+            self.__left_blinker.turn_on()
+        elif side == side.RIGHT:
+            self.__right_blinker.turn_on()
+        elif side == side.BOTH:
+            self.__left_blinker.turn_on()
+            self.__right_blinker.turn_on()
+        elif side == side.LEFT_RECIPROCAL:
+            self.__left_blinker.turn_on()
+            self.__right_blinker.turn_off()
+        elif side == side.RIGHT_RECIPROCAL:
+            self.__right_blinker.turn_on()
+            self.__left_blinker.turn_off()
+        else:
+            raise ValueError("Invalid side value")
+        
+    def blink(self, side: Side, **kwargs) -> None:
+        if side == side.LEFT:
+            self.__left_blinker.blink(**kwargs)
+        elif side == side.RIGHT:
+            self.__right_blinker.blink(**kwargs)
+        elif side == side.BOTH:
+            self.__left_blinker.blink(**kwargs)
+            self.__right_blinker.blink(**kwargs)
+        elif side == side.LEFT_RECIPROCAL:
+            self.__left_blinker.blink(**kwargs)
+            self.__right_blinker.turn_off()
+        elif side == side.RIGHT_RECIPROCAL:
+            self.__right_blinker.blink(**kwargs)
+            self.__left_blinker.turn_off()
+        else:
+            raise ValueError("Invalid side value")
+        
 
 if __name__ == "__main__":
     def off_state_generator() -> MonitoredState:
