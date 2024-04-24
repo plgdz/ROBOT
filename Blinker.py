@@ -2,7 +2,7 @@ from typing import Callable
 from FiniteStateMachine import FiniteStateMachine
 from State import State, ActionState, MonitoredState
 from Transition import ConditionalTransition, Transition, MonitoredTransition, ActionTransition
-from Condition import StateEntryDurationCondition, StateValueCondition
+from Condition import StateEntryDurationCondition, StateValueCondition, AlwaysTrueCondition
 from time import time
 
 class Blinker(FiniteStateMachine):
@@ -28,6 +28,9 @@ class Blinker(FiniteStateMachine):
         self.__blink_begin = MonitoredState()
         self.__blink_stop_begin = MonitoredState()
         self.__blink_stop_end = MonitoredState()
+
+        self.__off.add_transition(ConditionalTransition(next_state=self.__off, condition=AlwaysTrueCondition()))
+        self.__on.add_transition(ConditionalTransition(next_state=self.__on, condition=AlwaysTrueCondition()))
         
         
         # first transition : from off duration to on
@@ -59,14 +62,26 @@ class Blinker(FiniteStateMachine):
 
         
         # fifth transition : from blink_begin to blink_off & from blink_begin to blink_on
-        self.svc_blink_begin = StateValueCondition(0, self.__blink_begin)
-        from_blink_begin_to_blink_off = ConditionalTransition(next_state=self.__blink_off, condition=self.svc_blink_begin)
-        from_blink_begin_to_blink_on = ConditionalTransition(next_state=self.__blink_on, condition=self.svc_blink_begin)
+        self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=StateValueCondition(False, self.__blink_begin)))
+        self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_on, condition=StateValueCondition(True, self.__blink_begin)))
 
-        self.__blink_begin.add_transition(from_blink_begin_to_blink_off)
-        self.__blink_begin.add_transition(from_blink_begin_to_blink_on)
+        #-------------------------------------------------------------------------------
+        self.__blink_stop_begin.add_transition(ConditionalTransition(next_state=self.__blink_stop_off, condition=StateValueCondition(False, self.__blink_stop_begin)))
+        self.__blink_stop_begin.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition=StateValueCondition(True, self.__blink_stop_begin)))
 
-        
+        self.sedc_blink_stop_off = StateEntryDurationCondition(0, self.__blink_stop_off)
+        self.sedc_blink_stop_on = StateEntryDurationCondition(0, self.__blink_stop_on)
+
+        self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition= self.sedc_blink_stop_off))
+        self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_off, condition= self.sedc_blink_stop_on))
+
+        self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=StateEntryDurationCondition(0, self.__blink_stop_begin)))
+        self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=StateEntryDurationCondition(0, self.__blink_stop_begin)))
+        #-------------------------------------------------------------------------------
+
+
+
+
         # State entry condition sur le blink_stop_begin
         self.sedc_blink_stop_begin = StateEntryDurationCondition(0, self.__blink_stop_begin)
         from_blink_stop_begin_to_blink_stop_end = ConditionalTransition(next_state=self.__blink_stop_end, condition=self.sedc_blink_stop_begin)
@@ -155,6 +170,7 @@ class Blinker(FiniteStateMachine):
         else:
             raise ValueError("turn_on takes at most 1 argument")
         
+
     def blink(self, **kwargs) -> None:
         first_case = {'cycle_duration', 'percent_on', 'begin_on'}
         second_case = {'total_duration', 'cycle_duration', 'percent_on', 'begin_on', 'end_off'}
@@ -168,11 +184,22 @@ class Blinker(FiniteStateMachine):
             
             # set the starting state of the blink
             self.__blink_begin.custom_value = kwargs['begin_on']
-            self.svc_blink_begin.expected_value = kwargs['begin_on']
 
             # transit to the blink_begin state
             self.transit_to(self.__blink_begin)
         elif second_case <= set(kwargs.keys()):
+            self.__blink_stop_begin.custom_value = (kwargs['begin_on'], kwargs['end_off'], kwargs['total_duration'])
+
+            # set the duration of the blink_off and blink_on states
+            self.sedc_blink_on.duration = kwargs['cycle_duration'] * kwargs['percent_on']
+            self.sedc_blink_off.duration = kwargs['cycle_duration'] - self.sedc_blink_on.duration
+
+            # set the starting state of the blink
+            self.__blink_stop_begin.custom_value = kwargs['begin_on']
+
+            self.sedc_blink_stop_off.duration = kwargs['percent_on'] * kwargs['cycle_duration']
+            self.sedc_blink_stop_on.duration = kwargs['cycle_duration'] - self.sedc_blink_stop_off.duration
+
             pass
         elif third_case <= set(kwargs.keys()):
             pass
@@ -202,8 +229,8 @@ if __name__ == "__main__":
     
     blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
     
-    blinker.track()
-    blinker.turn_on(duration=10.0)
+    # blinker.track()
+    blinker.blink(cycle_duration=10, percent_on=0.5, begin_on=False)
     blinker.start(reset=False, time_budget=1000)
   
     
