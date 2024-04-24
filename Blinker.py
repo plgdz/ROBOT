@@ -1,4 +1,5 @@
 from typing import Callable
+from enum import Enum, auto
 from FiniteStateMachine import FiniteStateMachine
 from State import State, ActionState, MonitoredState
 from Transition import ConditionalTransition, Transition, MonitoredTransition, ActionTransition
@@ -54,8 +55,6 @@ class Blinker(FiniteStateMachine):
         self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=StateValueCondition(False, self.__blink_begin)))
         self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_on, condition=StateValueCondition(True, self.__blink_begin)))
 
-
-
         # -------------------------------------------------------------------------------
         # State entry condition sur le blink_stop_begin
         self.__blink_stop_begin.add_transition(ConditionalTransition(next_state=self.__blink_stop_off, condition=StateValueCondition(False, self.__blink_stop_begin)))
@@ -74,51 +73,7 @@ class Blinker(FiniteStateMachine):
 
         self.__blink_stop_end.add_transition(ConditionalTransition(next_state=self.__on, condition=StateValueCondition(True, self.__blink_stop_end)))
         self.__blink_stop_end.add_transition(ConditionalTransition(next_state=self.__off, condition=StateValueCondition(False, self.__blink_stop_end)))
-        # -------------------------------------------------------------------------------
 
-
-
-
-        # # State entry condition sur le blink_stop_begin
-        # self.sedc_blink_stop_begin = StateEntryDurationCondition(0, self.__blink_stop_begin)
-        # from_blink_stop_begin_to_blink_stop_end = ConditionalTransition(next_state=self.__blink_stop_end, condition=self.sedc_blink_stop_begin)
-        
-        
-        # sixth transition : from blink_stop_off to blink_stop_on
-        # self.sedc_blink_stop_off = StateEntryDurationCondition(0, self.__blink_stop_off)
-        # from_blink_stop_off_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.sedc_blink_stop_off)  
-        # self.__blink_stop_off.add_transition(from_blink_stop_off_to_blink_stop_on)
-        # # from blink_stop_off to blink_stop_end
-        # self.__blink_stop_off.add_transition(from_blink_stop_begin_to_blink_stop_end)
-
-        
-        # # seventh transition : from blink_stop_on to blink_stop_off
-        # self.sedc_blink_stop_on = StateEntryDurationCondition(0, self.__blink_stop_on)
-        # from_blink_stop_on_to_blink_stop_off = ConditionalTransition(next_state=self.__blink_stop_off, condition=self.sedc_blink_stop_on)
-        # self.__blink_stop_on.add_transition(from_blink_stop_on_to_blink_stop_off)
-        # # from blink_stop_on to blink_stop_end
-        # self.__blink_stop_on.add_transition(from_blink_stop_begin_to_blink_stop_end)
-
-        
-        # eight transition : from blink_stop_begin to blink_stop_off & from blink_stop_begin to blink_stop_on
-        # self.svc_blink_stop_begin = StateValueCondition(0, self.__blink_stop_begin)
-        # # from blink_stop_begin to blink_stop_off
-        # from_blink_stop_begin_to_blink_stop_off = ConditionalTransition(next_state=self.__blink_stop_off, condition=self.svc_blink_stop_begin)
-        # self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_off)
-        # # from blink_stop_begin to blink_stop_on
-        # from_blink_stop_begin_to_blink_stop_on = ConditionalTransition(next_state=self.__blink_stop_on, condition=self.svc_blink_stop_begin)
-        # self.__blink_stop_begin.add_transition(from_blink_stop_begin_to_blink_stop_on)
-
-
-        # ninth transition : from blink_stop_end to on / off
-        # # from blink_stop_end to on
-        # from_blink_stop_end_to_on = ConditionalTransition(next_state=self.__on, condition=StateValueCondition(True, self.__blink_stop_end))
-        # self.__blink_stop_end.add_transition(from_blink_stop_end_to_on)
-        # # from blink_stop_end to off
-        # from_blink_stop_end_to_off = ConditionalTransition(next_state=self.__off, condition=StateValueCondition(False, self.__blink_stop_end))
-        # self.__blink_stop_end.add_transition(from_blink_stop_end_to_off)
-
-    
         #  init layout
         layout = FiniteStateMachine.Layout()
         layout.add_states([
@@ -211,14 +166,10 @@ class Blinker(FiniteStateMachine):
         elif fourth_case == set(kwargs.keys()):
             # set the starting state of the blink
             self.__blink_stop_begin.custom_value = kwargs['begin_on']
-    
             total_duration = kwargs['cycle_duration'] * kwargs['n_cycles']
-
             # set the duration of the blink_stop_begin state
             self.sedc_blink_stop_begin.duration = total_duration
             # set the duration of the blink_off and blink_on states
-
-
             self.sedc_blink_stop_on.duration = kwargs['cycle_duration'] * kwargs['percent_on']
             self.sedc_blink_stop_off.duration = kwargs['cycle_duration'] - self.sedc_blink_stop_on.duration
             # set the status of the blink_stop_end state
@@ -229,6 +180,15 @@ class Blinker(FiniteStateMachine):
             raise ValueError(f"Invalid arguments, kwargs must be \n\t - {first_case}, \n\t - {second_case}, \n\t - {third_case}, \n\t - {fourth_case}")
 
 
+class SideBlinkers():
+
+    
+
+    class Side(Enum):
+        LEFT = auto()
+        RIGHT = auto()
+        BOTH = auto()
+        LEFT_RECIPROCICAL = auto()
 
 
 
