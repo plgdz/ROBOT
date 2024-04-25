@@ -85,28 +85,75 @@ class Transition:
 
 
 class ConditionalTransition(Transition):
+    """Représente une transition conditionnelle entre les états dans une machine à états.
+
+    Cette classe étend la classe Transition pour inclure une condition qui doit être satisfaite
+    pour que la transition soit valide.
+
+    Attributs :
+        __condition (Condition): La condition qui doit être satisfaite pour que la transition soit valide.
+    """
     
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
+        """Initialise une instance de ConditionalTransition.
+
+        Args :
+            next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
+            condition (Condition, facultatif): La condition qui doit être satisfaite pour que la transition soit valide. Par défaut à None.
+        """
         super().__init__(next_state)
         self.__condition : 'Condition' = condition
 
     @property
     def valid(self) -> bool:
+        """Vérifie si la transition est valide.
+
+        Une transition est considérée comme valide si elle a un état suivant défini et que la condition est satisfaite.
+
+        Retourne :
+            bool: True si la transition est valide, False autrement.
+        """
         return (self.__condition is not None) and super().valid
     
     @property
     def condition(self) -> 'Condition':
+        """Obtient la condition de la transition.
+
+        Retourne :
+            Condition: La condition à satisfaire pour que la transition soit valide.
+        """
         return self.__condition
     
     @condition.setter
     def condition(self, condition: 'Condition') -> None:
+        """
+        Définit la condition de la transition.
+        Args :
+            condition (Condition): La condition à satisfaire pour que la transition soit valide.
+        """
+        from Condition import Condition
+        if not isinstance(condition, Condition):
+            raise TypeError("condition doit être une instance de Condition.")
         self.__condition : 'Condition' = condition
     
     @property
     def transiting(self) -> bool:
+        """Indique si la transition est en cours.
+
+        Retourne :
+            bool: True si la transition est en cours, False autrement.
+        """
         return bool(self.__condition)
 
 class ActionTransition(ConditionalTransition):
+    """Représente une transition avec une action à exécuter pendant la transition.
+
+    Cette classe étend la classe ConditionalTransition pour inclure une action à exécuter
+    pendant la transition.
+
+    Attributs :
+        __transiting_actions (List[Callable[[], None]]): La liste des actions à exécuter pendant la transition.
+    """
 
     Action = Callable[[], None]
 
@@ -120,6 +167,10 @@ class ActionTransition(ConditionalTransition):
         self.__transiting_actions : List[self.Action] = []
 
     def _do_transiting_action(self) -> None:
+        """Exécute l'action de transition.
+
+        Cette méthode exécute toutes les actions de transition enregistrées.
+        """
         super()._do_transiting_action()
         for transiting_action in self.__transiting_actions:
             transiting_action()
@@ -136,6 +187,16 @@ class ActionTransition(ConditionalTransition):
         self.__transiting_actions.add(action)
         
 class MonitoredTransition(ActionTransition):
+    """Représente une transition avec un suivi de statistiques.
+
+    Cette classe étend la classe ActionTransition pour inclure un suivi des statistiques
+    de la transition.
+
+    Attributs :
+        __transit_count (int): Le nombre de fois que la transition a été effectuée.
+        __last_transit_time (float): Le temps de la dernière transition.
+        custom_value (any): Une valeur personnalisée pour la transition.
+    """
     
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
         """Initialise une instance de MonitoredTransition.
@@ -150,27 +211,57 @@ class MonitoredTransition(ActionTransition):
 
     @property
     def transit_count(self) -> int:
+        """Obtient le nombre de fois que la transition a été effectuée.
+
+        Retourne :
+            int: Le nombre de fois que la transition a été effectuée.
+        """
         return self.__transit_count
     
     @transit_count.setter
     def transit_count(self) -> None:
+        """Définit le nombre de fois que la transition a été effectuée.
+        
+        Cette propriété est en lecture seule.
+        
+        Raises :
+            ValueError: Si la propriété est modifiée.
+        """
         raise ValueError("transit_count is a read-only property")
     
     @property
     def last_transit_time(self) -> float:
+        """Obtient le temps de la dernière transition.
+
+        Retourne :
+            float: Le temps de la dernière transition.
+        """
         return self.__last_transit_time
     
     @last_transit_time.setter
     def last_transit_time(self) -> None:
+        """Définit le temps de la dernière transition.
+
+        Cette propriété est en lecture seule.
+
+        Raises :
+            ValueError: Si la propriété est modifiée.
+        """
         raise ValueError("last_transit_time is a read-only property")
     
     def reset_transit_count(self) -> None:
+        """Réinitialise le nombre de fois que la transition a été effectuée."""
         self.__transit_count = 0
 
     def reset_last_transit_time(self) -> None:
+        """Réinitialise le temps de la dernière transition."""
         self.__last_transit_time = 0
         
     def _exec_transiting_action(self) -> None:
+        """Exécute l'action de transition.
+
+        Cette méthode met à jour le moment de la derniere entrée et incrémente le compteur de l'état.
+        """
         self.__last_transit_time = time.perf_counter()
         self.__transit_count += 1
         super()._exec_transiting_action()

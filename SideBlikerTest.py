@@ -83,6 +83,7 @@ class SideBlinkerTest(unittest.TestCase):
                 self.assertEqual("Off", self.side_blinker._SideBlinker__left_blinker.current_applicative_state.custom_value)
                 self.assertEqual("On", self.side_blinker._SideBlinker__right_blinker.current_applicative_state.custom_value)
 
+    
 
 if __name__ == '__main__':
     unittest.main()
