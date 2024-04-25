@@ -217,7 +217,7 @@ class Blinker(FiniteStateMachine):
             raise ValueError(f"Invalid arguments, kwargs must be \n\t - {first_case}, \n\t - {second_case}, \n\t - {third_case}, \n\t - {fourth_case}")
 
 
-class SideBlinkers():
+class SideBlinker():
 
     class Side(Enum):
         LEFT = auto()
