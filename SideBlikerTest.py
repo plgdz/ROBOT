@@ -62,6 +62,7 @@ class SideBlinkerTest(unittest.TestCase):
 
     def test_blink_case_one(self):
         for side in SideBlinker.Side:
+            self.side_blinker.turn_off(SideBlinker.Side.BOTH)
             self.side_blinker.blink(side, cycle_duration=1, percent_on=0.5, begin_on=True)
             t_start = time.perf_counter()
             self.side_blinker._SideBlinker__left_blinker.track()
