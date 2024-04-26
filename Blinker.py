@@ -440,10 +440,12 @@ class SideBlinker():
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.turn_off()
             self.__left_blinker.start(reset=False, time_budget=10000)
+            self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.RIGHT_RECIPROCAL:
             self.__right_blinker.blink(**kwargs)
             self.__left_blinker.turn_off()
             self.__right_blinker.start(reset=False, time_budget=10000)
+            self.__left_blinker.start(reset=False, time_budget=10000)
         else:
             raise ValueError("Invalid side value")
         
