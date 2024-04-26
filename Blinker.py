@@ -427,43 +427,58 @@ class SideBlinker():
         """
         if side == side.LEFT:
             self.__left_blinker.blink(**kwargs)
+            self.__left_blinker.start(reset=False, time_budget=10000)   # devrait start ici?
         elif side == side.RIGHT:
             self.__right_blinker.blink(**kwargs)
+            self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.BOTH:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.blink(**kwargs)
+            self.__left_blinker.start(reset=False, time_budget=10000)       # comment start quand cest both?
+            self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.LEFT_RECIPROCAL:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.turn_off()
+            self.__left_blinker.start(reset=False, time_budget=10000)
         elif side == side.RIGHT_RECIPROCAL:
             self.__right_blinker.blink(**kwargs)
             self.__left_blinker.turn_off()
+            self.__right_blinker.start(reset=False, time_budget=10000)
         else:
             raise ValueError("Invalid side value")
         
 
-# if __name__ == "__main__":
-#     def off_state_generator() -> MonitoredState:
-#         off = MonitoredState()
-#         # off.add_entering_action(lambda: print("Entering Off"))
-#         off.add_in_state_action(lambda: print("Off"))
-#         # off.add_exiting_action(lambda: print("Exiting Off"))
-#         return off
+if __name__ == "__main__":
+    def off_state_generator() -> MonitoredState:
+        off = MonitoredState()
+        # off.add_entering_action(lambda: print("Entering Off"))
+        off.add_in_state_action(lambda: print("Off"))
+        # off.add_exiting_action(lambda: print("Exiting Off"))
+        return off
     
-#     def on_state_generator() -> MonitoredState:
-#         on = MonitoredState()
-#         # on.add_entering_action(lambda: print("Entering On"))
-#         on.add_in_state_action(lambda: print("On"))
-#         # on.add_exiting_action(lambda: print("Exiting On"))
-#         return on
+    def on_state_generator() -> MonitoredState:
+        on = MonitoredState()
+        # on.add_entering_action(lambda: print("Entering On"))
+        on.add_in_state_action(lambda: print("On"))
+        # on.add_exiting_action(lambda: print("Exiting On"))
+        return on
     
-#     blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
+    blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
+    side_blinker = SideBlinker(
+        off_state_generator,
+        on_state_generator,
+        off_state_generator,
+        on_state_generator
+    )
+
     
-#     # blinker.track()
-#     blinker.blink(cycle_duration=4, n_cycles=5, percent_on=0.5, begin_on=True, end_off=True)
-#     # blinker.blink(cycle_duration=10, percent_on=0.5, begin_on=True)
-#     # blinker.track()
-#     blinker.start(reset=False, time_budget=10000)
+    # # blinker.track()
+    # blinker.blink(cycle_duration=4, n_cycles=5, percent_on=0.5, begin_on=True, end_off=True)
+    # # blinker.blink(cycle_duration=10, percent_on=0.5, begin_on=True)
+    # # blinker.track()
+    # blinker.start(reset=False, time_budget=10000)
   
     
+    side_blinker.blink(SideBlinker.Side.BOTH, cycle_duration=1, percent_on=0.5, begin_on=True)
+    # side_blinker.start(reset=False, time_budget=10000)
 

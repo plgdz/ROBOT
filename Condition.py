@@ -5,41 +5,107 @@ from typing import List
 from time import perf_counter
 
 class Condition:
-    # TODO: Vérifier si le __inverse est correct
+    """
+    Représente une condition abstraite dans un contexte de transitions d'état ou de logique de contrôle.
+    Cette classe doit être étendue avec une implémentation concrète de la méthode `_compare`, qui définit
+    la logique spécifique de la condition.
+
+    Attributs:
+        __inverse (bool): Si True, le résultat de la condition est inversé.
+
+    Args:
+        inverse (bool, optionnel): Si True, inverse le résultat de l'évaluation de la condition. Par défaut à False.
+
+    Méthodes:
+        _compare(): Méthode abstraite qui doit être implémentée pour comparer la condition.
+        __bool__(): Permet à l'objet Condition de se comporter comme un booléen en fonction du résultat de _compare().
+    """
     def __init__(self, inverse: bool = False) -> None:
         self.__inverse = inverse
 
     @abstractmethod
     def _compare(self) -> bool:
+        """
+        Méthode abstraite qui doit être implémentée pour évaluer la condition.
+        
+        Renvoie:
+            bool: Résultat de l'évaluation de la condition.
+        """
         pass
 
     def __bool__(self) -> bool:
+        """
+        Évalue la condition en utilisant la méthode _compare et inverse le résultat si nécessaire.
+
+        Renvoie:
+            bool: Le résultat final de la condition, potentiellement inversé.
+        """
         return self._compare() if not self.__inverse else not self._compare()
 
 class ConditionalTransition(Transition):
-    #
+    """
+    Représente une transition conditionnelle entre états dans une machine à états. Cette transition est 
+    effective seulement si la condition spécifiée est remplie.
+
+    Hérite de:
+        Transition: Classe de base pour les transitions entre états.
+
+    Attributs:
+        __condition (Condition): La condition qui doit être remplie pour que la transition soit possible.
+
+    Args:
+        next_state (State): L'état suivant vers lequel la transition doit mener.
+        condition (Condition, optionnel): La condition qui doit être évaluée pour que la transition soit effective. Par défaut à None.
+
+    Propriétés:
+        valid (bool): Retourne True si la transition est valide (condition non nulle et autres critères de base remplis).
+        condition (Condition): Permet de récupérer ou de définir la condition associée à la transition.
+
+    Méthodes:
+        is_transiting(): Détermine si la transition est en train de se produire en évaluant la condition.
+    """
     def __init__(self, next_state: State, condition: Condition = None) -> None:
         super().__init__(next_state)
         self.__condition : Condition = condition
 
-    #
     @property
     def valid(self) -> bool:
-        # if self.__condition:
-        #     return True
-        # return False
+        """
+        Détermine si la transition est valide. Une transition est considérée comme valide si elle a une condition
+        non nulle et que la transition de base est également valide.
+
+        Renvoie:
+            bool: Vrai si la transition est valide, faux sinon.
+        """
         return (self.__condition is not None) and super().valid
     
     @property
     def condition(self) -> Condition:
+        """
+        Obtient la condition associée à cette transition.
+
+        Renvoie:
+            Condition: La condition actuelle de la transition.
+        """
         return self.__condition
     
     @condition.setter
     def condition(self, condition: Condition) -> None:
+        """
+        Définit la condition associée à cette transition.
+
+        Args:
+            condition (Condition): La nouvelle condition à associer.
+        """
         self.__condition : Condition = condition
     
-    #
     def is_transiting(self) -> bool:
+        """
+        Évalue la condition pour déterminer si la transition doit avoir lieu.
+
+        Renvoie:
+            bool: Vrai si la condition est remplie et donc la transition est en cours, faux sinon.
+        """
         return bool(self.__condition)
 
 class ManyConditions(Condition): 
