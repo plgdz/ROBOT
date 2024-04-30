@@ -540,7 +540,7 @@ class SideBlinker():
             self.__right_blinker.blink(**kwargs, reciprocal=True)
         elif side == side.RIGHT_RECIPROCAL:
             self.__right_blinker.blink(**kwargs)
-            self.__left_blinker.tblink(**kwargs, reciprocal=True)
+            self.__left_blinker.blink(**kwargs, reciprocal=True)
         else:
             raise ValueError("Invalid side value")
         
