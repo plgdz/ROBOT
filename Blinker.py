@@ -4,7 +4,7 @@ from FiniteStateMachine import FiniteStateMachine
 from State import State, ActionState, MonitoredState
 from Transition import ConditionalTransition, Transition, MonitoredTransition, ActionTransition
 from Condition import StateEntryDurationCondition, StateValueCondition, AlwaysTrueCondition
-from time import time
+from time import sleep
 
 class Blinker(FiniteStateMachine):
     """
@@ -262,7 +262,8 @@ class Blinker(FiniteStateMachine):
             >>> blinker.blink(n_cycles=5, cycle_duration=1, percent_on=0.5, begin_on=True, end_off=True)
         """
 
-        default_kwargs = {'cycle_duration': 1., 'percent_on': 0.5, 'begin_on': True, 'end_off': True}
+        default_kwargs = {'cycle_duration': 1., 'percent_on': 0.5, 'begin_on': True, 'end_off': True, 'reciprocal': False}
+        reciprocal = kwargs['reciprocal'] if 'reciprocal' in kwargs else default_kwargs['reciprocal']
 
         second_mandatory_kwargs = {'total_duration'}
         third_mandatory_kwargs = {'total_duration', 'n_cycles'}
@@ -283,6 +284,10 @@ class Blinker(FiniteStateMachine):
             end_off = kwargs['end_off'] if 'end_off' in kwargs else default_kwargs['end_off']
             if not isinstance(end_off, bool):
                 raise ValueError("end_off must be a boolean")
+            
+            if reciprocal:
+                percent_on = 1 - percent_on
+                begin_on = not begin_on
 
             self.__sedc_blink_stop_begin.duration = total_duration
             self.sedc_blink_stop_on.duration = cycle_duration * percent_on
@@ -293,7 +298,7 @@ class Blinker(FiniteStateMachine):
         elif second_mandatory_kwargs <= set(kwargs.keys()):
             total_duration = kwargs['total_duration']
             if not isinstance(total_duration, float):
-                raise ValueError("total_duration must be an integer")
+                raise ValueError("total_duration must be an float")
             cycle_duration = kwargs['cycle_duration'] if 'cycle_duration' in kwargs else default_kwargs['cycle_duration']
             if not isinstance(cycle_duration, float):
                 raise ValueError("cycle_duration must be an integer")
@@ -306,6 +311,10 @@ class Blinker(FiniteStateMachine):
             end_off = kwargs['end_off'] if 'end_off' in kwargs else default_kwargs['end_off']
             if not isinstance(end_off, bool):
                 raise ValueError("end_off must be a boolean")
+            
+            if reciprocal:
+                percent_on = 1 - percent_on
+                begin_on = not begin_on
 
             self.__sedc_blink_stop_begin.duration = total_duration
             self.__blink_stop_begin.custom_value = begin_on
@@ -313,6 +322,7 @@ class Blinker(FiniteStateMachine):
             self.__sedc_blink_stop_off.duration = cycle_duration - self.sedc_blink_stop_on.duration
             self.__blink_stop_end.custom_value = end_off
             self.transit_to(self.__blink_stop_begin)
+
         elif fourth_mandatory_kwargs <= set(kwargs.keys()):
             n_cycles = kwargs['n_cycles']
             if not isinstance(n_cycles, int):
@@ -329,6 +339,10 @@ class Blinker(FiniteStateMachine):
             end_off = kwargs['end_off'] if 'end_off' in kwargs else default_kwargs['end_off']
             if not isinstance(end_off, bool):
                 raise ValueError("end_off must be a boolean")
+            
+            if reciprocal:
+                percent_on = 1 - percent_on
+                begin_on = not begin_on
 
             total_duration = cycle_duration * n_cycles
             self.__sedc_blink_stop_begin.duration = total_duration
@@ -347,6 +361,10 @@ class Blinker(FiniteStateMachine):
             begin_on = kwargs['begin_on'] if 'begin_on' in kwargs else default_kwargs['begin_on']
             if not isinstance(begin_on, bool):
                 raise ValueError("begin_on must be a boolean")
+            
+            if reciprocal:
+                percent_on = 1 - percent_on
+                begin_on = not begin_on
 
             self.__sedc_blink_on.duration = cycle_duration * percent_on
             self.__sedc_blink_off.duration = cycle_duration - self.__sedc_blink_on.duration
@@ -519,9 +537,73 @@ class SideBlinker():
             self.__right_blinker.blink(**kwargs)
         elif side == side.LEFT_RECIPROCAL:
             self.__left_blinker.blink(**kwargs)
-            self.__right_blinker.turn_off()
+            self.__right_blinker.blink(**kwargs, reciprocal=True)
         elif side == side.RIGHT_RECIPROCAL:
             self.__right_blinker.blink(**kwargs)
-            self.__left_blinker.turn_off()
+            self.__left_blinker.tblink(**kwargs, reciprocal=True)
         else:
             raise ValueError("Invalid side value")
+        
+    def track(self):
+        """
+        Permet de suivre le clignotement des clignotants gauche et droit.
+
+        Utilisation:
+            >>> side_blinker.track()
+        """
+        self.__left_blinker.track()
+        print("    ", end="")
+        self.__right_blinker.track()
+        
+
+if __name__ == "__main__":
+    def off_state_generator_r() -> MonitoredState:
+        off = MonitoredState()
+        # off.add_entering_action(lambda: print("Entering Off"))
+        off.add_in_state_action(lambda: print("\rOff", end="    "))
+        # off.add_exiting_action(lambda: print("Exiting Off"))
+        return off
+    
+    def on_state_generator_r() -> MonitoredState:
+        on = MonitoredState()
+        # on.add_entering_action(lambda: print("Entering On"))
+        on.add_in_state_action(lambda: print("\rOn", end="    "))
+        # on.add_exiting_action(lambda: print("Exiting On"))
+        return on
+    
+    def off_state_generator_l() -> MonitoredState:
+        off = MonitoredState()
+        # off.add_entering_action(lambda: print("Entering Off"))
+        off.add_in_state_action(lambda: print("\r\tOff", end="    "))
+        # off.add_exiting_action(lambda: print("Exiting Off"))
+        return off
+    
+    def on_state_generator_l() -> MonitoredState:
+        on = MonitoredState()
+        # on.add_entering_action(lambda: print("Entering On"))
+        on.add_in_state_action(lambda: print("\r\tOn", end="    "))
+        # on.add_exiting_action(lambda: print("Exiting On"))
+        return on
+    
+    blinker = Blinker(off_state_generator=off_state_generator_r, on_state_generator=on_state_generator_r)
+    side_blinker = SideBlinker(
+        off_state_generator_r,
+        on_state_generator_r,
+        off_state_generator_l,
+        on_state_generator_l
+    )
+
+    
+    # blinker.track()
+    # blinker.blink(cycle_duration=4., n_cycles=5, percent_on=0.5, begin_on=True, end_off=True)
+    # blinker.blink(n_cycles=5)
+    # blinker.blink()
+    # blinker.blink(cycle_duration=10, percent_on=0.5, begin_on=True)
+    # blinker.track()
+    # blinker.start(reset=False, time_budget=10000)
+  
+    
+    side_blinker.blink(SideBlinker.Side.LEFT_RECIPROCAL, percent_on=.75, cycle_duration=4.)
+    while True:
+        side_blinker.track()
+
