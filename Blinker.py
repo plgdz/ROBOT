@@ -78,20 +78,20 @@ class Blinker(FiniteStateMachine):
         self.__on.add_transition(ConditionalTransition(next_state=self.__on, condition=AlwaysTrueCondition()))
         
         # first transition : from off duration to on
-        self.sedc_off_duration = StateEntryDurationCondition(__default_value, self.__off_duration)
-        self.__off_duration.add_transition(ConditionalTransition(next_state=self.__on, condition=self.sedc_off_duration))
+        self.__sedc_off_duration = StateEntryDurationCondition(__default_value, self.__off_duration)
+        self.__off_duration.add_transition(ConditionalTransition(next_state=self.__on, condition=self.__sedc_off_duration))
 
         # second transition : from on duration to off
-        self.sedc_on_duration = StateEntryDurationCondition(__default_value, self.__on_duration)
-        self.__on_duration.add_transition(ConditionalTransition(next_state=self.__off, condition=self.sedc_on_duration))
+        self.__sedc_on_duration = StateEntryDurationCondition(__default_value, self.__on_duration)
+        self.__on_duration.add_transition(ConditionalTransition(next_state=self.__off, condition=self.__sedc_on_duration))
 
         # third transition : from blink_off to blink_on
-        self.sedc_blink_off = StateEntryDurationCondition(__default_value, self.__blink_off)
-        self.__blink_off.add_transition(ConditionalTransition(next_state=self.__blink_on, condition=self.sedc_blink_off))
+        self.__sedc_blink_off = StateEntryDurationCondition(__default_value, self.__blink_off)
+        self.__blink_off.add_transition(ConditionalTransition(next_state=self.__blink_on, condition=self.__sedc_blink_off))
 
         # fourth transition : from blink_on to blink_off
-        self.sedc_blink_on = StateEntryDurationCondition(__default_value, self.__blink_on)
-        self.__blink_on.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=self.sedc_blink_on))
+        self.__sedc_blink_on = StateEntryDurationCondition(__default_value, self.__blink_on)
+        self.__blink_on.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=self.__sedc_blink_on))
 
         # fifth transition : from blink_begin to blink_off & from blink_begin to blink_on
         self.__blink_begin.add_transition(ConditionalTransition(next_state=self.__blink_off, condition=StateValueCondition(False, self.__blink_begin)))
@@ -102,17 +102,17 @@ class Blinker(FiniteStateMachine):
         self.__blink_stop_begin.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition=StateValueCondition(True, self.__blink_stop_begin)))
 
         #from blink_stop_off to blink_stop_on
-        self.sedc_blink_stop_off = StateEntryDurationCondition(__default_value, self.__blink_stop_off)
-        self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition= self.sedc_blink_stop_off))
+        self.__sedc_blink_stop_off = StateEntryDurationCondition(__default_value, self.__blink_stop_off)
+        self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_on, condition= self.__sedc_blink_stop_off))
         
         #from blink_stop_on to blink_stop_off
         self.sedc_blink_stop_on = StateEntryDurationCondition(__default_value, self.__blink_stop_on)
         self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_off, condition= self.sedc_blink_stop_on))
 
         #from blink_stop_on to blink_stop_end & from blink_stop_off to blink_stop_end
-        self.sedc_blink_stop_begin = StateEntryDurationCondition(__default_value, self.__blink_stop_begin)
-        self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=self.sedc_blink_stop_begin))
-        self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=self.sedc_blink_stop_begin))
+        self.__sedc_blink_stop_begin = StateEntryDurationCondition(__default_value, self.__blink_stop_begin)
+        self.__blink_stop_off.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=self.__sedc_blink_stop_begin))
+        self.__blink_stop_on.add_transition(ConditionalTransition(next_state=self.__blink_stop_end, condition=self.__sedc_blink_stop_begin))
 
         #from blink_stop_end to off & from blink_stop_end to on
         self.__blink_stop_end.add_transition(ConditionalTransition(next_state=self.__on, condition=StateValueCondition(True, self.__blink_stop_end)))
@@ -187,7 +187,7 @@ class Blinker(FiniteStateMachine):
         if kwargs == {}:
             self.transit_to(self.__off)
         elif 'duration' in kwargs:
-            self.sedc_off_duration.duration = kwargs['duration']
+            self.__sedc_off_duration.duration = kwargs['duration']
             self.transit_to(self.__off_duration)
         else:
             raise ValueError("turn_off takes at most 1 argument")
@@ -216,7 +216,7 @@ class Blinker(FiniteStateMachine):
         if kwargs == {}:
             self.transit_to(self.__on)
         elif 'duration' in kwargs:
-            self.sedc_on_duration.duration = kwargs["duration"]
+            self.__sedc_on_duration.duration = kwargs["duration"]
             self.transit_to(self.__on_duration)
         else:
             raise ValueError("turn_on takes at most 1 argument")
@@ -262,63 +262,96 @@ class Blinker(FiniteStateMachine):
             >>> blinker.blink(n_cycles=5, cycle_duration=1, percent_on=0.5, begin_on=True, end_off=True)
         """
 
-        default_kwargs = {'cycle_duration': 1, 'percent_on': 0.5, 'begin_on': True, 'end_off': True}
+        default_kwargs = {'cycle_duration': 1., 'percent_on': 0.5, 'begin_on': True, 'end_off': True}
 
-        first_case = {'cycle_duration', 'percent_on', 'begin_on'}
-        second_case = {'total_duration', 'cycle_duration', 'percent_on', 'begin_on', 'end_off'}
-        third_case = {'total_duration', 'n_cycles', 'percent_on', 'begin_on', 'end_off'}
-        fourth_case = {'n_cycles', 'cycle_duration', 'percent_on', 'begin_on', 'end_off'}
+        second_mandatory_kwargs = {'total_duration'}
+        third_mandatory_kwargs = {'total_duration', 'n_cycles'}
+        fourth_mandatory_kwargs = {'n_cycles'}
+        
+        if third_mandatory_kwargs <= set(kwargs.keys()):
+            total_duration = kwargs['total_duration']
+            n_cycles = kwargs['n_cycles']
+            if not isinstance(total_duration, float) or not isinstance(n_cycles, float):
+                raise ValueError("total_duration and n_cycles must be integers")
+            cycle_duration = total_duration / n_cycles
+            percent_on = kwargs['percent_on'] if 'percent_on' in kwargs else default_kwargs['percent_on']
+            if not isinstance(percent_on, float):
+                raise ValueError("percent_on must be a float")
+            begin_on = kwargs['begin_on'] if 'begin_on' in kwargs else default_kwargs['begin_on']
+            if not isinstance(begin_on, bool):
+                raise ValueError("begin_on must be a boolean")
+            end_off = kwargs['end_off'] if 'end_off' in kwargs else default_kwargs['end_off']
+            if not isinstance(end_off, bool):
+                raise ValueError("end_off must be a boolean")
 
-        if first_case == set(kwargs.keys()):
-            # set the duration of the blink_off and blink_on states
-            self.sedc_blink_on.duration = kwargs['cycle_duration'] * kwargs['percent_on']
-            self.sedc_blink_off.duration = kwargs['cycle_duration'] - self.sedc_blink_on.duration
-            # set the starting state of the blink
-            self.__blink_begin.custom_value = kwargs['begin_on']
-            # transit to the blink_begin state
-            self.transit_to(self.__blink_begin)
-        elif second_case == set(kwargs.keys()):
-            # set the starting state of the blink
-            self.__blink_stop_begin.custom_value = kwargs['begin_on']
-            # set the duration of the blink_stop_begin state
-            self.sedc_blink_stop_begin.duration = kwargs['total_duration']
-            # set the duration of the blink_off and blink_on states
-            self.sedc_blink_stop_on.duration = kwargs['cycle_duration'] * kwargs['percent_on']
-            self.sedc_blink_stop_off.duration = kwargs['cycle_duration'] - self.sedc_blink_stop_on.duration
-            # set the status of the blink_stop_end state
-            self.__blink_stop_end.custom_value = kwargs['end_off']
-            # transit to the blink_stop_begin state
+            self.__sedc_blink_stop_begin.duration = total_duration
+            self.sedc_blink_stop_on.duration = cycle_duration * percent_on
+            self.__sedc_blink_stop_off.duration = cycle_duration - self.sedc_blink_stop_on.duration
+            self.__blink_stop_begin.custom_value = begin_on
+            self.__blink_stop_end.custom_value = end_off
             self.transit_to(self.__blink_stop_begin)
-        elif third_case == set(kwargs.keys()):
-            # set the starting state of the blink
-            self.__blink_stop_begin.custom_value = kwargs['begin_on']
-            # set the duration of the blink_stop_begin state
-            self.sedc_blink_stop_begin.duration = kwargs['total_duration']
-            # set the duration of the blink_off and blink_on states
-            cycle_duration = kwargs['total_duration'] / kwargs['n_cycles']
+        elif second_mandatory_kwargs <= set(kwargs.keys()):
+            total_duration = kwargs['total_duration']
+            if not isinstance(total_duration, float):
+                raise ValueError("total_duration must be an integer")
+            cycle_duration = kwargs['cycle_duration'] if 'cycle_duration' in kwargs else default_kwargs['cycle_duration']
+            if not isinstance(cycle_duration, float):
+                raise ValueError("cycle_duration must be an integer")
+            percent_on = kwargs['percent_on'] if 'percent_on' in kwargs else default_kwargs['percent_on']
+            if not isinstance(percent_on, float):
+                raise ValueError("percent_on must be a float")
+            begin_on = kwargs['begin_on'] if 'begin_on' in kwargs else default_kwargs['begin_on']
+            if not isinstance(begin_on, bool):
+                raise ValueError("begin_on must be a boolean")
+            end_off = kwargs['end_off'] if 'end_off' in kwargs else default_kwargs['end_off']
+            if not isinstance(end_off, bool):
+                raise ValueError("end_off must be a boolean")
 
-            self.sedc_blink_stop_on.duration = cycle_duration * kwargs['percent_on']
-            self.sedc_blink_stop_off.duration = cycle_duration - self.sedc_blink_stop_on.duration
-            # set the status of the blink_stop_end state
-            self.__blink_stop_end.custom_value = kwargs['end_off']
-            # transit to the blink_stop_begin state
+            self.__sedc_blink_stop_begin.duration = total_duration
+            self.__blink_stop_begin.custom_value = begin_on
+            self.sedc_blink_stop_on.duration = cycle_duration * percent_on
+            self.__sedc_blink_stop_off.duration = cycle_duration - self.sedc_blink_stop_on.duration
+            self.__blink_stop_end.custom_value = end_off
             self.transit_to(self.__blink_stop_begin)
-        elif fourth_case == set(kwargs.keys()):
-            # set the starting state of the blink
-            self.__blink_stop_begin.custom_value = kwargs['begin_on']
-            total_duration = kwargs['cycle_duration'] * kwargs['n_cycles']
-            # set the duration of the blink_stop_begin state
-            self.sedc_blink_stop_begin.duration = total_duration
-            # set the duration of the blink_off and blink_on states
-            self.sedc_blink_stop_on.duration = kwargs['cycle_duration'] * kwargs['percent_on']
-            self.sedc_blink_stop_off.duration = kwargs['cycle_duration'] - self.sedc_blink_stop_on.duration
-            # set the status of the blink_stop_end state
-            self.__blink_stop_end.custom_value = kwargs['end_off']
-            # transit to the blink_stop_begin state
+        elif fourth_mandatory_kwargs <= set(kwargs.keys()):
+            n_cycles = kwargs['n_cycles']
+            if not isinstance(n_cycles, int):
+                raise ValueError("n_cycles must be an integer")
+            cycle_duration = kwargs['cycle_duration'] if 'cycle_duration' in kwargs else default_kwargs['cycle_duration']
+            if not isinstance(cycle_duration, float):
+                raise ValueError("cycle_duration must be an integer")
+            percent_on = kwargs['percent_on'] if 'percent_on' in kwargs else default_kwargs['percent_on']
+            if not isinstance(percent_on, float):
+                raise ValueError("percent_on must be a float")
+            begin_on = kwargs['begin_on'] if 'begin_on' in kwargs else default_kwargs['begin_on']
+            if not isinstance(begin_on, bool):
+                raise ValueError("begin_on must be a boolean")
+            end_off = kwargs['end_off'] if 'end_off' in kwargs else default_kwargs['end_off']
+            if not isinstance(end_off, bool):
+                raise ValueError("end_off must be a boolean")
+
+            total_duration = cycle_duration * n_cycles
+            self.__sedc_blink_stop_begin.duration = total_duration
+            self.__blink_stop_begin.custom_value = begin_on
+            self.sedc_blink_stop_on.duration = cycle_duration * percent_on
+            self.__sedc_blink_stop_off.duration = cycle_duration - self.sedc_blink_stop_on.duration
+            self.__blink_stop_end.custom_value = end_off
             self.transit_to(self.__blink_stop_begin)
         else:
-            raise ValueError(f"Invalid arguments, kwargs must be \n\t - {first_case}, \n\t - {second_case}, \n\t - {third_case}, \n\t - {fourth_case}")
+            cycle_duration = kwargs['cycle_duration'] if 'cycle_duration' in kwargs else default_kwargs['cycle_duration']
+            if not isinstance(cycle_duration, float):
+                raise ValueError("cycle_duration must be an float")
+            percent_on = kwargs['percent_on'] if 'percent_on' in kwargs else default_kwargs['percent_on']
+            if not isinstance(percent_on, float):
+                raise ValueError("percent_on must be a float")
+            begin_on = kwargs['begin_on'] if 'begin_on' in kwargs else default_kwargs['begin_on']
+            if not isinstance(begin_on, bool):
+                raise ValueError("begin_on must be a boolean")
 
+            self.__sedc_blink_on.duration = cycle_duration * percent_on
+            self.__sedc_blink_off.duration = cycle_duration - self.__sedc_blink_on.duration
+            self.__blink_begin.custom_value = begin_on
+            self.transit_to(self.__blink_begin)
 
 class SideBlinker():
     """
@@ -492,39 +525,3 @@ class SideBlinker():
             self.__left_blinker.turn_off()
         else:
             raise ValueError("Invalid side value")
-        
-
-if __name__ == "__main__":
-    def off_state_generator() -> MonitoredState:
-        off = MonitoredState()
-        # off.add_entering_action(lambda: print("Entering Off"))
-        off.add_in_state_action(lambda: print("Off"))
-        # off.add_exiting_action(lambda: print("Exiting Off"))
-        return off
-    
-    def on_state_generator() -> MonitoredState:
-        on = MonitoredState()
-        # on.add_entering_action(lambda: print("Entering On"))
-        on.add_in_state_action(lambda: print("On"))
-        # on.add_exiting_action(lambda: print("Exiting On"))
-        return on
-    
-    blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
-    side_blinker = SideBlinker(
-        off_state_generator,
-        on_state_generator,
-        off_state_generator,
-        on_state_generator
-    )
-
-    
-    # # blinker.track()
-    # blinker.blink(cycle_duration=4, n_cycles=5, percent_on=0.5, begin_on=True, end_off=True)
-    # # blinker.blink(cycle_duration=10, percent_on=0.5, begin_on=True)
-    # # blinker.track()
-    # blinker.start(reset=False, time_budget=10000)
-  
-    
-    side_blinker.blink(SideBlinker.Side.BOTH, cycle_duration=1, percent_on=0.5, begin_on=True)
-    # side_blinker.start(reset=False, time_budget=10000)
-
