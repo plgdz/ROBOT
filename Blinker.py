@@ -427,25 +427,18 @@ class SideBlinker():
         """
         if side == side.LEFT:
             self.__left_blinker.blink(**kwargs)
-            self.__left_blinker.start(reset=False, time_budget=10000)   # devrait start ici?
         elif side == side.RIGHT:
             self.__right_blinker.blink(**kwargs)
             self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.BOTH:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.blink(**kwargs)
-            self.__left_blinker.start(reset=False, time_budget=10000)       # comment start quand cest both?
-            self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.LEFT_RECIPROCAL:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.turn_off()
-            self.__left_blinker.start(reset=False, time_budget=10000)
-            self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.RIGHT_RECIPROCAL:
             self.__right_blinker.blink(**kwargs)
             self.__left_blinker.turn_off()
-            self.__right_blinker.start(reset=False, time_budget=10000)
-            self.__left_blinker.start(reset=False, time_budget=10000)
         else:
             raise ValueError("Invalid side value")
         
