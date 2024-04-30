@@ -26,6 +26,9 @@ class Condition:
         
         Raises:
             TypeError: Si inverse n'est pas de type bool.
+
+        Utilisation:
+            >>> condition = Condition(inverse=True)
         """
         if not isinstance(inverse, bool):
             raise TypeError("inverse must be of type bool")
@@ -47,6 +50,9 @@ class Condition:
 
         Renvoie:
             bool: Le résultat final de la condition, potentiellement inversé.
+
+        Utilisation:
+            >>> bool(condition)
         """
         return self._compare() if not self.__inverse else not self._compare()
 
@@ -74,6 +80,9 @@ class ConditionalTransition(Transition):
 
         Raises:
             TypeError: Si la condition n'est pas de type Condition.
+
+        Utilisation:
+            >>> transition = ConditionalTransition(next_state=next_state, condition=condition)
         """
         super().__init__(next_state)
         if condition is not None and not isinstance(condition, Condition):
@@ -87,6 +96,9 @@ class ConditionalTransition(Transition):
 
         Renvoie:
             bool: True si la condition est remplie et la transition de base est valide, False sinon.
+
+        Utilisation:
+            >>> transition.valid
         """
         return (self.__condition is not None) and super().valid
     
@@ -97,6 +109,9 @@ class ConditionalTransition(Transition):
 
         Renvoie:
             Condition: La condition actuelle associée à cette transition.
+
+        Utilisation:
+            >>> transition.condition
         """
         return self.__condition
     
@@ -127,6 +142,9 @@ class ConditionalTransition(Transition):
 
         Raises:
             ValueError: Si la condition est None.
+
+        Utilisation:
+            >>> transition.is_transiting()
         """
         return bool(self.__condition)
 
@@ -150,6 +168,9 @@ class ManyConditions(Condition):
 
         Args:
             inverse (bool, optionnel): Si True, l'ensemble de conditions sera inversé. Par défaut, False.
+
+        Utilisation:
+            >>> many_conditions = ManyConditions()
         """
         super().__init__(inverse)
         self._conditions : List[Condition] = []
@@ -165,8 +186,6 @@ class ManyConditions(Condition):
             TypeError: Si la condition n'est pas de type Condition.
 
         Utilisation:
-            >>> condition = Condition()
-            >>> many_conditions = ManyConditions()
             >>> many_conditions.add_condition(condition)
         """
         if not isinstance(condition, Condition):
@@ -184,9 +203,6 @@ class ManyConditions(Condition):
             TypeError: Si une condition n'est pas de type Condition.
 
         Utilisation:
-            >>> condition1 = Condition()
-            >>> condition2 = Condition()
-            >>> many_conditions = ManyConditions()
             >>> many_conditions.add_conditions([condition1, condition2])
         """
         for condition in conditions:
@@ -210,6 +226,9 @@ class AllConditions(ManyConditions):
 
         Args:
             inverse (bool, optionnel): Si True, l'ensemble de conditions sera inversé. Par défaut, False.
+
+        Utilisation:
+            >>> all_conditions = AllConditions()
         """
         super().__init__(inverse)
 
@@ -221,10 +240,6 @@ class AllConditions(ManyConditions):
             bool: True si toutes les conditions sont vraies, False sinon.
 
         Utilisation:
-            >>> all_conditions = AllConditions()
-            >>> all_conditions.add_condition(condition1)
-            >>> all_conditions.add_condition(condition2)
-            >>> all_conditions.add_condition(condition3)
             >>> all_conditions._compare()
         """
         return all(condition for condition in self._conditions)
@@ -245,6 +260,9 @@ class AnyConditions(ManyConditions):
 
         Args:
             inverse (bool, optionnel): Si True, l'ensemble de conditions sera inversé. Par défaut, False.
+
+        Utilisation:
+            >>> any_conditions = AnyConditions()
         """
         super().__init__(inverse)
 
@@ -256,10 +274,6 @@ class AnyConditions(ManyConditions):
             bool: True si l'une des conditions est vraie, False sinon.
 
         Utilisation:
-            >>> any_conditions = AnyConditions()
-            >>> any_conditions.add_condition(condition1)
-            >>> any_conditions.add_condition(condition2)
-            >>> any_conditions.add_condition(condition3)
             >>> any_conditions._compare()
         """
         return any(condition for condition in self._conditions)
@@ -280,6 +294,9 @@ class NoneConditions(ManyConditions):
 
         Args:
             inverse (bool, optionnel): Si True, l'ensemble de conditions sera inversé. Par défaut, False.
+
+        Utilisation:
+            >>> none_conditions = NoneConditions()
         """
         super().__init__(inverse)
 
@@ -291,10 +308,6 @@ class NoneConditions(ManyConditions):
             bool: True si aucune des conditions n'est vraie, False sinon.
 
         Utilisation:
-            >>> none_conditions = NoneConditions()
-            >>> none_conditions.add_condition(condition1)
-            >>> none_conditions.add_condition(condition2)
-            >>> none_conditions.add_condition(condition3)
             >>> none_conditions._compare()
         """
         return not any(condition for condition in self._conditions)
@@ -325,6 +338,9 @@ class MonitoredStateCondition(Condition):
 
         Raises:
             TypeError: Si l'objet n'est pas de type MonitoredState.
+
+        Utilisation:
+            >>> condition = MonitoredStateCondition(monitored_state)
         """
         super().__init__(inverse)
         if not isinstance(monitored_state, MonitoredState):
@@ -338,6 +354,9 @@ class MonitoredStateCondition(Condition):
 
         Renvoie:
             MonitoredState: L'objet d'état surveillé.
+
+        Utilisation:
+            >>> monitored_state = condition.monitored_state
         """
         return self._monitored_state
     
@@ -354,6 +373,9 @@ class MonitoredStateCondition(Condition):
 
         Raises:
             TypeError: Si l'objet n'est pas de type MonitoredState.
+
+        Utilisation:
+            >>> condition.monitored_state = monitored_state
         """
         if not isinstance(monitored_state, MonitoredState):
             raise TypeError("monitored_state must be of type MonitoredState")
@@ -381,6 +403,9 @@ class StateEntryDurationCondition(MonitoredStateCondition):
 
         Raises:
             ValueError: Si la durée est négative.
+
+        Utilisation:
+            >>> condition = StateEntryDurationCondition(duration=1.0, monitored_state=monitored_state)
         """
         super().__init__(monitored_state, inverse)
         if duration < 0:
@@ -394,6 +419,9 @@ class StateEntryDurationCondition(MonitoredStateCondition):
 
         Renvoie:
             float: Le seuil de durée.
+
+        Utilisation:
+            >>> duration = condition.duration
         """
         return self._duration
     
@@ -405,11 +433,11 @@ class StateEntryDurationCondition(MonitoredStateCondition):
         Args:
             duration (float): Le seuil de durée.
 
-        Renvoie:
-            None
-
         Raises:
             ValueError: Si la durée est négative.
+
+        Utilisation:
+            >>> condition.duration = 1.0
         """
         if duration < 0:
             raise ValueError("duration must be positive")
@@ -423,7 +451,6 @@ class StateEntryDurationCondition(MonitoredStateCondition):
             bool: True si la durée de la dernière entrée est supérieure ou égale au seuil, False sinon.
 
         Utilisation:
-            >>> condition = StateEntryDurationCondition(duration=1.0, monitored_state=monitored_state)
             >>> condition._compare()
         """
 
@@ -454,6 +481,9 @@ class StateEntryCountCondition(MonitoredStateCondition):
             
         Raises:
             ValueError: Si le nombre d'entrées attendu est négatif.
+
+        Utilisation:
+            >>> condition = StateEntryCountCondition(expected_count=3, monitored_state=monitored_state, auto_reset=True)
         """
         super().__init__(monitored_state, inverse)
         if expected_count < 0:
@@ -467,8 +497,11 @@ class StateEntryCountCondition(MonitoredStateCondition):
         """
         Obtient le nombre d'entrées attendu.
 
-        Renvoie:
+        Return:
             int: Le nombre d'entrées attendu.
+
+        Utilisation:
+            >>> expected_count = condition.expected_count
         """
         return self.__expected_count
     
@@ -480,11 +513,11 @@ class StateEntryCountCondition(MonitoredStateCondition):
         Args:
             expected_count (int): Le nombre d'entrées attendu.
 
-        Renvoie:
-            None
-
         Raises:
             ValueError: Si le nombre d'entrées attendu est négatif.
+
+        Utilisation:
+            >>> condition.expected_count = 3
         """
         if expected_count < 0:
             raise ValueError("expected_count must be positive")
@@ -498,7 +531,6 @@ class StateEntryCountCondition(MonitoredStateCondition):
             bool: True si le nombre d'entrées est supérieur ou égal au nombre d'entrées attendu, False sinon.
 
         Utilisation:
-            >>> condition = StateEntryCountCondition(expected_count=3, monitored_state=monitored_state, auto_reset=True)
             >>> condition._compare()
         """
         return self._monitored_state.entry_count - self.__ref_count >= self.__expected_count
@@ -508,7 +540,6 @@ class StateEntryCountCondition(MonitoredStateCondition):
         Réinitialise le nombre de référence au nombre d'entrées actuel.
 
         Utilisation:
-            >>> condition = StateEntryCountCondition(expected_count=3, monitored_state=monitored_state, auto_reset=True)
             >>> condition.reset_count()
         """
         if self.__auto_reset:
@@ -533,6 +564,9 @@ class StateValueCondition(MonitoredStateCondition):
             expected_value (any): La valeur attendue pour la condition.
             monitored_state (MonitoredState): L'objet d'état surveillé.
             inverse (bool, optionnel): Si True, le résultat de la condition est inversé. Par défaut, False.
+
+        Utilisation:
+            >>> condition = StateValueCondition(expected_value="On", monitored_state=monitored_state)
         """
         super().__init__(monitored_state, inverse)
         self.__expected_value = expected_value
@@ -542,8 +576,11 @@ class StateValueCondition(MonitoredStateCondition):
         """
         Obtient la valeur attendue pour la condition.
 
-        Renvoie:
+        Return:
             any: La valeur attendue pour la condition.
+
+        Utilisation:
+            >>> expected_value = condition.expected_value
         """
         return self.__expected_value
     
@@ -555,11 +592,7 @@ class StateValueCondition(MonitoredStateCondition):
         Args:
             expected_value (any): La valeur attendue pour la condition.
 
-        Renvoie:
-            None
-
         Utilisation:
-            >>> condition = StateValueCondition(expected_value="On", monitored_state=monitored_state)
             >>> condition.expected_value = "Off"
         """
         self.__expected_value: any = expected_value
@@ -572,7 +605,6 @@ class StateValueCondition(MonitoredStateCondition):
             bool: True si les valeurs sont égales, False sinon.
 
         Utilisation:    
-            >>> condition = StateValueCondition(expected_value="On", monitored_state=monitored_state)
             >>> condition._compare()
         """
         return self._monitored_state.custom_value == self.__expected_value
@@ -591,6 +623,9 @@ class AlwaysTrueCondition(Condition):
 
         Args :
             inverse (bool, facultatif): Inverse le résultat de la condition. Par défaut à False.
+
+        Utilisation :
+            >>> condition = AlwaysTrueCondition()
         """
         super().__init__(inverse)
 
@@ -602,7 +637,6 @@ class AlwaysTrueCondition(Condition):
             bool: True
 
         Utilisation :
-            >>> condition = AlwaysTrueCondition()
             >>> condition._compare()
         """
         return True
@@ -629,6 +663,9 @@ class ValueCondition(Condition):
             value (any): La valeur à comparer.
             expected_value (any): La valeur attendue.
             inverse (bool, facultatif): Inverse le résultat de la condition. Par défaut à False.
+
+        Utilisation :
+            >>> condition = ValueCondition(value=1, expected_value=1)
         """
         super().__init__(inverse)
         self.__value: any = value
@@ -638,11 +675,10 @@ class ValueCondition(Condition):
         """
         Compare la valeur à la valeur attendue.
 
-        Renvoie :
+        Return :
             bool: True si la valeur est égale à la valeur attendue, False sinon.
 
         Utilisation :
-            >>> condition = ValueCondition(value=1, expected_value=1)
             >>> condition._compare()
         """
         return self.__value == self.__expected_value
@@ -675,7 +711,10 @@ class TimedCondition(Condition):
             inverse (bool, facultatif): Inverse le résultat de la condition. Par défaut à False.
 
         Raises :
-            ValueError: Si la durée est négative.
+            ValueError: Si la durée est négative.   
+
+        Utilisation :
+            >>> condition = TimedCondition(duration=1)
         """
         if duration < 0:
             raise ValueError("duration must be positive")
@@ -689,8 +728,11 @@ class TimedCondition(Condition):
         """
         Obtient la durée après laquelle la condition doit devenir True.
 
-        Renvoie :
+        Return :
             float: La durée.
+
+        Utilisation :   
+            >>> duration = condition.duration
         """
         return self.__duration
     
@@ -704,6 +746,9 @@ class TimedCondition(Condition):
 
         Raises :
             ValueError: Si la durée est négative.
+
+        Utilisation :
+            >>> condition.duration = 1
         """
         if duration < 0:
             raise ValueError("duration must be positive")
@@ -714,7 +759,6 @@ class TimedCondition(Condition):
         Réinitialise le compteur de temps de la condition.
 
         Utilisation :
-            >>> condition = TimedCondition(duration=1)
             >>> condition.reset()
         """
         self.__counter_duration: float = 0
@@ -724,11 +768,10 @@ class TimedCondition(Condition):
         """
         Vérifie si la durée spécifiée s'est écoulée depuis le point de référence temporel.
 
-        Renvoie :
+        Return :
             bool: True si la durée s'est écoulée, False sinon.
 
         Utilisation :
-            >>> condition = TimedCondition(duration=1)
             >>> condition._compare()
         """
         self.__counter_duration = perf_counter() - self.__time_reference
