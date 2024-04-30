@@ -6,7 +6,8 @@ if TYPE_CHECKING:
     from Condition import Condition
 
 class Transition:
-    """Représente une transition entre les états dans une machine à états.
+    """
+    Représente une transition entre les états dans une machine à états.
 
     Cette classe abstraite définit le cadre pour une transition, incluant l'état suivant
     et si la transition est valide.
@@ -25,7 +26,8 @@ class Transition:
     """
 
     def __init__(self, next_state: 'State' = None) -> None:
-        """Initialise une instance de Transition.
+        """
+        Initialise une instance de Transition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
@@ -37,7 +39,8 @@ class Transition:
 
     @property
     def next_state(self) -> 'State':
-        """Obtient l'état suivant de la transition.
+        """
+        Obtient l'état suivant de la transition.
 
         Retourne :
             State: L'état vers lequel la transition mène.
@@ -49,7 +52,8 @@ class Transition:
     
     @next_state.setter
     def next_state(self, next_state: 'State') -> None:
-        """Définit l'état suivant de la transition.
+        """
+        Définit l'état suivant de la transition.
 
         Args :
             next_state (State): L'état vers lequel la transition doit mener.
@@ -67,7 +71,8 @@ class Transition:
 
     @property
     def valid(self) -> bool:
-        """Vérifie si la transition est valide.
+        """
+        Vérifie si la transition est valide.
 
         Une transition est considérée comme valide si elle a un état suivant défini.
 
@@ -82,7 +87,8 @@ class Transition:
     @property
     @abstractmethod
     def transiting(self) -> bool:
-        """Indique si la transition est en cours.
+        """
+        Indique si la transition est en cours.
 
         Cette méthode abstraite doit être implémentée par les sous-classes pour déterminer
         si la transition est actuellement en cours.
@@ -106,7 +112,8 @@ class Transition:
         self._do_transiting_action()
 
     def _do_transiting_action(self) -> None:
-        """Définit l'action à exécuter pendant la transition.
+        """
+        Définit l'action à exécuter pendant la transition.
 
         Cette méthode doit être surchargée par les sous-classes pour implémenter l'action spécifique
         de la transition.
@@ -118,7 +125,8 @@ class Transition:
 
 
 class ConditionalTransition(Transition):
-    """Représente une transition conditionnelle entre les états dans une machine à états.
+    """
+    Représente une transition conditionnelle entre les états dans une machine à états.
 
     Cette classe étend la classe Transition pour inclure une condition qui doit être satisfaite
     pour que la transition soit valide.
@@ -133,7 +141,8 @@ class ConditionalTransition(Transition):
     """
     
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
-        """Initialise une instance de ConditionalTransition.
+        """
+        Initialise une instance de ConditionalTransition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
@@ -147,7 +156,8 @@ class ConditionalTransition(Transition):
 
     @property
     def valid(self) -> bool:
-        """Vérifie si la transition est valide.
+        """
+        Vérifie si la transition est valide.
 
         Une transition est considérée comme valide si elle a un état suivant défini et que la condition est satisfaite.
 
@@ -161,7 +171,8 @@ class ConditionalTransition(Transition):
     
     @property
     def condition(self) -> 'Condition':
-        """Obtient la condition de la transition.
+        """
+        Obtient la condition de la transition.
 
         Retourne :
             Condition: La condition à satisfaire pour que la transition soit valide.
@@ -191,7 +202,8 @@ class ConditionalTransition(Transition):
     
     @property
     def transiting(self) -> bool:
-        """Indique si la transition est en cours.
+        """
+        Indique si la transition est en cours.
 
         Retourne :
             bool: True si la transition est en cours, False autrement.
@@ -202,7 +214,8 @@ class ConditionalTransition(Transition):
         return bool(self.__condition)
 
 class ActionTransition(ConditionalTransition):
-    """Représente une transition avec une action à exécuter pendant la transition.
+    """
+    Représente une transition avec une action à exécuter pendant la transition.
 
     Cette classe étend la classe ConditionalTransition pour inclure une action à exécuter
     pendant la transition.
@@ -217,7 +230,8 @@ class ActionTransition(ConditionalTransition):
     Action = Callable[[], None]
 
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
-        """Initialise une instance de ActionTransition.
+        """
+        Initialise une instance de ActionTransition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
@@ -229,7 +243,8 @@ class ActionTransition(ConditionalTransition):
         self.__transiting_actions : List[self.Action] = []
 
     def _do_transiting_action(self) -> None:
-        """Exécute l'action de transition.
+        """
+        Exécute l'action de transition.
 
         Cette méthode exécute toutes les actions de transition enregistrées.
 
@@ -242,7 +257,8 @@ class ActionTransition(ConditionalTransition):
 
 
     def add_transiting_action(self, action: Action) -> None:
-        """Ajoute une action à exécuter au moment de transition.
+        """
+        Ajoute une action à exécuter au moment de transition.
 
         Args :
             action (Action) : L'action à exécuter.
@@ -258,7 +274,8 @@ class ActionTransition(ConditionalTransition):
         self.__transiting_actions.add(action)
         
 class MonitoredTransition(ActionTransition):
-    """Représente une transition avec un suivi de statistiques.
+    """
+    Représente une transition avec un suivi de statistiques.
 
     Cette classe étend la classe ActionTransition pour inclure un suivi des statistiques
     de la transition.
@@ -278,7 +295,8 @@ class MonitoredTransition(ActionTransition):
     """
     
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
-        """Initialise une instance de MonitoredTransition.
+        """
+        Initialise une instance de MonitoredTransition.
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
@@ -294,7 +312,8 @@ class MonitoredTransition(ActionTransition):
 
     @property
     def transit_count(self) -> int:
-        """Obtient le nombre de fois que la transition a été effectuée.
+        """
+        Obtient le nombre de fois que la transition a été effectuée.
 
         Retourne :
             int: Le nombre de fois que la transition a été effectuée.
@@ -306,7 +325,8 @@ class MonitoredTransition(ActionTransition):
     
     @transit_count.setter
     def transit_count(self) -> None:
-        """Définit le nombre de fois que la transition a été effectuée.
+        """
+        Définit le nombre de fois que la transition a été effectuée.
         
         Cette propriété est en lecture seule.
         
@@ -317,7 +337,8 @@ class MonitoredTransition(ActionTransition):
     
     @property
     def last_transit_time(self) -> float:
-        """Obtient le temps de la dernière transition.
+        """
+        Obtient le temps de la dernière transition.
 
         Retourne :
             float: Le temps de la dernière transition.
