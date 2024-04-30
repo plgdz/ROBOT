@@ -29,6 +29,9 @@ class Transition:
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
+
+        Utilisation :
+            >>> transition = Transition(next_state)
         """
         self.next_state = next_state
 
@@ -86,6 +89,9 @@ class Transition:
 
         Retourne :
             bool: True si la transition est en cours, False autrement.
+
+        Utilisation :
+            >>> transition.transiting
         """
         pass
 
@@ -93,6 +99,9 @@ class Transition:
         """Exécute l'action de transition.
 
         Cette méthode appelle `_do_transiting_action` pour effectuer l'action spécifique de transition.
+
+        Utilisation :
+            >>> transition._exec_transiting_action()
         """
         self._do_transiting_action()
 
@@ -101,6 +110,9 @@ class Transition:
 
         Cette méthode doit être surchargée par les sous-classes pour implémenter l'action spécifique
         de la transition.
+
+        Utilisation :
+            >>> transition._do_transiting_action()
         """
         pass
 
@@ -126,6 +138,9 @@ class ConditionalTransition(Transition):
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
             condition (Condition, facultatif): La condition qui doit être satisfaite pour que la transition soit valide. Par défaut à None.
+
+        Utilisation :
+            >>> transition = ConditionalTransition(next_state, condition)
         """
         super().__init__(next_state)
         self.__condition : 'Condition' = condition
@@ -284,7 +299,6 @@ class MonitoredTransition(ActionTransition):
         Retourne :
             int: Le nombre de fois que la transition a été effectuée.
 
-
         Utilisation :
             >>> transit_count = transition.transit_count
         """
@@ -315,7 +329,8 @@ class MonitoredTransition(ActionTransition):
     
     @last_transit_time.setter
     def last_transit_time(self) -> None:
-        """Définit le temps de la dernière transition.
+        """
+        Définit le temps de la dernière transition.
 
         Cette propriété est en lecture seule.
 
@@ -325,15 +340,26 @@ class MonitoredTransition(ActionTransition):
         raise ValueError("last_transit_time is a read-only property")
     
     def reset_transit_count(self) -> None:
-        """Réinitialise le nombre de fois que la transition a été effectuée."""
+        """
+        Réinitialise le nombre de fois que la transition a été effectuée.
+        
+        Utilisation :
+            >>> transition.reset_transit_count()
+        """
         self.__transit_count = 0
 
     def reset_last_transit_time(self) -> None:
-        """Réinitialise le temps de la dernière transition."""
+        """
+        Réinitialise le temps de la dernière transition.
+        
+        Utilisation :
+            >>> transition.reset_last_transit_time()
+        """
         self.__last_transit_time = 0
         
     def _exec_transiting_action(self) -> None:
-        """Exécute l'action de transition.
+        """
+        Exécute l'action de transition.
 
         Cette méthode met à jour le moment de la derniere entrée et incrémente le compteur de l'état.
 
