@@ -429,7 +429,6 @@ class SideBlinker():
             self.__left_blinker.blink(**kwargs)
         elif side == side.RIGHT:
             self.__right_blinker.blink(**kwargs)
-            self.__right_blinker.start(reset=False, time_budget=10000)
         elif side == side.BOTH:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.blink(**kwargs)
