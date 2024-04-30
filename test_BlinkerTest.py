@@ -38,7 +38,7 @@ class BlinkerTest(unittest.TestCase):
 
     def test_blinker_blink(self) -> None:
         duration = 0.6
-        self.blinker.blink(cycle_duration=1, percent_on=0.5, begin_on=True)
+        self.blinker.blink(cycle_duration=1., percent_on=0.5, begin_on=True)
         t_start = time.perf_counter()
         self.blinker.track()
         self.assertEqual("On", self.blinker.current_applicative_state.custom_value)
@@ -48,7 +48,7 @@ class BlinkerTest(unittest.TestCase):
 
     def test_blinker_blink_off(self) -> None:
         duration = 0.6
-        self.blinker.blink(cycle_duration=1, percent_on=0.5, begin_on=False)
+        self.blinker.blink(cycle_duration=1., percent_on=0.5, begin_on=False)
         t_start = time.perf_counter()
         self.blinker.track()
         self.assertEqual("Off", self.blinker.current_applicative_state.custom_value)
@@ -57,9 +57,9 @@ class BlinkerTest(unittest.TestCase):
         self.assertEqual("On", self.blinker.current_applicative_state.custom_value)
 
     def test_blinker_total_duration(self) -> None:
-        duration = 2
+        duration = 2.
         t_start = time.perf_counter()
-        self.blinker.blink(total_duration=duration, cycle_duration=1, percent_on=0.5, begin_on=True, end_off=True)
+        self.blinker.blink(total_duration=duration, cycle_duration=1., percent_on=0.5, begin_on=True, end_off=True)
         self.blinker.track()
         self.assertEqual("On", self.blinker.current_applicative_state.custom_value)
         while time.perf_counter() - t_start < duration :
