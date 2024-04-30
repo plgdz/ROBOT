@@ -13,6 +13,15 @@ class Transition:
 
     Attributs :
         __next_state (State): L'état vers lequel cette transition mène.
+
+    Propriétés :
+        next_state (State): L'état vers lequel cette transition mène.
+        valid (bool): Indique si la transition est valide.
+        transiting (bool): Indique si la transition est en cours.
+
+    Méthodes :
+        _do_transiting_action(): Définit l'action à exécuter pendant la transition
+        _exec_transiting_action(): Exécute l'action de transition
     """
 
     def __init__(self, next_state: 'State' = None) -> None:
@@ -29,6 +38,9 @@ class Transition:
 
         Retourne :
             State: L'état vers lequel la transition mène.
+
+        Utilisation :
+            >>> next_state = transition.next_state
         """
         return self.__next_state
     
@@ -38,6 +50,12 @@ class Transition:
 
         Args :
             next_state (State): L'état vers lequel la transition doit mener.
+
+        Raises :
+            TypeError: Si next_state n'est pas une instance de State.
+
+        Utilisation :
+            >>> transition.next_state = next_state
         """
         from State import State
         if not isinstance(next_state, State):
@@ -52,6 +70,9 @@ class Transition:
 
         Retourne :
             bool: True si la transition est valide, False autrement.
+
+        Utilisation :
+            >>> transition.valid
         """
         return True if self.__next_state is not None else False
     
@@ -92,6 +113,11 @@ class ConditionalTransition(Transition):
 
     Attributs :
         __condition (Condition): La condition qui doit être satisfaite pour que la transition soit valide.
+
+    Propriétés :
+        condition (Condition): La condition à satisfaire pour que la transition soit valide.
+        valid (bool): Indique si la transition est valide.
+        transiting (bool): Indique si la transition est en cours.
     """
     
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
@@ -112,6 +138,9 @@ class ConditionalTransition(Transition):
 
         Retourne :
             bool: True si la transition est valide, False autrement.
+
+        Utilisation :
+            >>> transition.valid
         """
         return (self.__condition is not None) and super().valid
     
@@ -121,6 +150,9 @@ class ConditionalTransition(Transition):
 
         Retourne :
             Condition: La condition à satisfaire pour que la transition soit valide.
+
+        Utilisation :
+            >>> condition = transition.condition
         """
         return self.__condition
     
@@ -130,6 +162,12 @@ class ConditionalTransition(Transition):
         Définit la condition de la transition.
         Args :
             condition (Condition): La condition à satisfaire pour que la transition soit valide.
+
+        Raises :
+            TypeError: Si condition n'est pas une instance de Condition.
+
+        Utilisation :
+            >>> transition.condition = condition
         """
         from Condition import Condition
         if not isinstance(condition, Condition):
@@ -142,6 +180,9 @@ class ConditionalTransition(Transition):
 
         Retourne :
             bool: True si la transition est en cours, False autrement.
+
+        Utilisation :
+            >>> transition.transiting
         """
         return bool(self.__condition)
 
@@ -153,6 +194,9 @@ class ActionTransition(ConditionalTransition):
 
     Attributs :
         __transiting_actions (List[Callable[[], None]]): La liste des actions à exécuter pendant la transition.
+
+    Méthodes :
+        add_transiting_action(action: Callable[[], None]): Ajoute une action à exécuter pendant la transition.
     """
 
     Action = Callable[[], None]
@@ -162,6 +206,9 @@ class ActionTransition(ConditionalTransition):
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
+
+        Utilisation :
+            >>> transition = ActionTransition(next_state)
         """
         super().__init__(next_state, condition)
         self.__transiting_actions : List[self.Action] = []
@@ -170,6 +217,9 @@ class ActionTransition(ConditionalTransition):
         """Exécute l'action de transition.
 
         Cette méthode exécute toutes les actions de transition enregistrées.
+
+        Utilisation :
+            >>> transition._do_transiting_action()
         """
         super()._do_transiting_action()
         for transiting_action in self.__transiting_actions:
@@ -181,6 +231,12 @@ class ActionTransition(ConditionalTransition):
 
         Args :
             action (Action) : L'action à exécuter.
+
+        Raises :
+            TypeError: Si l'action n'est pas une instance de Action.
+
+        Utilisation :
+            >>> transition.add_transiting_action(action)
         """
         if not isinstance(action, self.Action):
             raise TypeError("L'action doit être une instance de Action.")
@@ -196,6 +252,14 @@ class MonitoredTransition(ActionTransition):
         __transit_count (int): Le nombre de fois que la transition a été effectuée.
         __last_transit_time (float): Le temps de la dernière transition.
         custom_value (any): Une valeur personnalisée pour la transition.
+
+    Propriétés :
+        transit_count (int): Le nombre de fois que la transition a été effectuée.
+        last_transit_time (float): Le temps de la dernière transition.
+
+    Méthodes :
+        reset_transit_count(): Réinitialise le nombre de fois que la transition a été effectuée.
+        reset_last_transit_time(): Réinitialise le temps de la dernière transition.
     """
     
     def __init__(self, next_state: 'State' = None, condition: 'Condition' = None) -> None:
@@ -203,6 +267,10 @@ class MonitoredTransition(ActionTransition):
 
         Args :
             next_state (State, facultatif): L'état suivant de cette transition. Par défaut à None.
+            condition (Condition, facultatif): La condition qui doit être satisfaite pour que la transition soit valide. Par défaut à None.
+
+        Utilisation :
+            >>> transition = MonitoredTransition(next_state=next_state, condition=condition)
         """
         super().__init__(next_state, condition)
         self.__transit_count : int = 0
@@ -215,6 +283,10 @@ class MonitoredTransition(ActionTransition):
 
         Retourne :
             int: Le nombre de fois que la transition a été effectuée.
+
+
+        Utilisation :
+            >>> transit_count = transition.transit_count
         """
         return self.__transit_count
     
@@ -235,6 +307,9 @@ class MonitoredTransition(ActionTransition):
 
         Retourne :
             float: Le temps de la dernière transition.
+
+        Utilisation :
+            >>> last_transit_time = transition.last_transit_time
         """
         return self.__last_transit_time
     
@@ -261,6 +336,9 @@ class MonitoredTransition(ActionTransition):
         """Exécute l'action de transition.
 
         Cette méthode met à jour le moment de la derniere entrée et incrémente le compteur de l'état.
+
+        Utilisation :
+            >>> transition._exec_transiting_action()
         """
         self.__last_transit_time = time.perf_counter()
         self.__transit_count += 1

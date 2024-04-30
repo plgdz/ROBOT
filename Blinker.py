@@ -30,6 +30,12 @@ class Blinker(FiniteStateMachine):
         turn_off(**kwargs): Éteint le clignotant avec des options facultatives.
         turn_on(**kwargs): Allume le clignotant avec des options facultatives.
         blink(**kwargs): Fait clignoter le clignotant avec différentes configurations.
+
+    Utilisation:
+        >>> blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
+        >>> blinker.turn_off()
+        >>> blinker.turn_on()
+        >>> blinker.blink(cycle_duration=1, percent_on=0.5, begin_on=True)
     """
     StateGenerator = Callable[[], MonitoredState]
 
@@ -40,6 +46,9 @@ class Blinker(FiniteStateMachine):
         Args:
             off_state_generator (StateGenerator): Callable générant l'état "éteint".
             on_state_generator (StateGenerator): Callable générant l'état "allumé".
+
+        Utilisation:
+            >>> blinker = Blinker(off_state_generator=off_state_generator, on_state_generator=on_state_generator)
         """
         
         __default_value = 0
@@ -126,6 +135,12 @@ class Blinker(FiniteStateMachine):
     def is_off(self) -> bool:
         """
         Getter de la propriété is_off, retourne True si l'etat courant est eteint.
+
+        Returns:
+            bool: True si l'état courant est éteint, False autrement.
+
+        Utilisation:
+            >>> blinker.is_off
         """
         return self.__is_off
     
@@ -137,6 +152,12 @@ class Blinker(FiniteStateMachine):
     def is_on(self) -> bool:
         """
         Getter de la propriété is_on, retourne si l'etat courant est allumé.
+
+        Returns:
+            bool: True si l'état courant est allumé, False autrement.
+
+        Utilisation:
+            >>> blinker.is_on
         """
         return self.__is_on
     
@@ -313,6 +334,29 @@ class SideBlinker():
         - turn_off(side: SideBlinker.Side): Éteint le clignotant latéral spécifié.
         - turn_on(side: SideBlinker.Side): Allume le clignotant latéral spécifié.
         - blink(side: SideBlinker.Side, **kwargs): Fait clignoter le clignotant latéral spécifié.
+
+    Utilisation:
+        >>> side_blinker = SideBlinker(
+        >>>     off_state_generator,
+        >>>     on_state_generator,
+        >>>     off_state_generator,
+        >>>     on_state_generator
+        >>> )
+        >>> side_blinker.turn_off(SideBlinker.Side.LEFT)
+        >>> side_blinker.turn_off(SideBlinker.Side.RIGHT)
+        >>> side_blinker.turn_off(SideBlinker.Side.BOTH)
+        >>> side_blinker.turn_off(SideBlinker.Side.LEFT_RECIPROCAL)
+        >>> side_blinker.turn_off(SideBlinker.Side.RIGHT_RECIPROCAL)
+        >>> side_blinker.turn_on(SideBlinker.Side.LEFT)
+        >>> side_blinker.turn_on(SideBlinker.Side.RIGHT)
+        >>> side_blinker.turn_on(SideBlinker.Side.BOTH)
+        >>> side_blinker.turn_on(SideBlinker.Side.LEFT_RECIPROCAL)
+        >>> side_blinker.turn_on(SideBlinker.Side.RIGHT_RECIPROCAL)
+        >>> side_blinker.blink(SideBlinker.Side.LEFT, cycle_duration=1, percent_on=0.5, begin_on=True)
+        >>> side_blinker.blink(SideBlinker.Side.RIGHT, cycle_duration=1, percent_on=0.5, begin_on=True)
+        >>> side_blinker.blink(SideBlinker.Side.BOTH, cycle_duration=1, percent_on=0.5, begin_on=True)
+        >>> side_blinker.blink(SideBlinker.Side.LEFT_RECIPROCAL, cycle_duration=1, percent_on=0.5, begin_on=True)
+        >>> side_blinker.blink(SideBlinker.Side.RIGHT_RECIPROCAL, cycle_duration=1, percent_on=0.5, begin_on=True)
     """
 
     class Side(Enum):
@@ -337,6 +381,14 @@ class SideBlinker():
             - left_on_state_generator (Blinker.StateGenerator): Le générateur d'état pour le clignotant gauche lorsqu'il est allumé.
             - right_off_state_generator (Blinker.StateGenerator): Le générateur d'état pour le clignotant droit lorsqu'il est éteint.
             - right_on_state_generator (Blinker.StateGenerator): Le générateur d'état pour le clignotant droit lorsqu'il est allumé.
+
+        Utilisation:
+            >>> side_blinker = SideBlinker(
+            >>>     off_state_generator,
+            >>>     on_state_generator,
+            >>>     off_state_generator,
+            >>>     on_state_generator
+            >>> )
         """
         self.__left_blinker = Blinker(left_off_state_generator, left_on_state_generator)
         self.__right_blinker = Blinker(right_off_state_generator, right_on_state_generator)
