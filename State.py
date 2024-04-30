@@ -13,6 +13,18 @@ class State:
     Attributs :
         parameters (Parameters) : Les paramètres définissant le comportement de l'état.
         __transitions (set) : Un ensemble de transitions de cet état vers d'autres états.
+
+    Méthodes :
+        valid : Vérifie si l'état a des transitions valides.
+        terminal : Indique si l'état est terminal.
+        transiting : Liste les statuts de transition.
+        add_transition : Ajoute une transition à l'état.
+        _exec_entering_action : Exécute l'action associée à l'entrée dans l'état.
+        _exec_in_state_action : Exécute l'action associée à la présence dans l'état.
+        _exec_exiting_action : Exécute l'action associée à la sortie de l'état.
+        _do_entering_action : Définit l'action à exécuter à l'entrée de l'état.
+        _do_in_state_action : Définit l'action à exécuter pendant la présence dans l'état.
+        _do_exiting_action : Définit l'action à exécuter à la sortie de l'état.
     """
 
     class Parameters:
@@ -22,6 +34,9 @@ class State:
             terminal (bool) : Indicateur si l'état est terminal.
             do_in_state_action_when_entering (bool) : Indicateur si une action doit être exécutée en entrant dans l'état.
             do_in_state_action_when_exiting (bool) : Indicateur si une action doit être exécutée en sortant de l'état.
+
+        Méthodes :
+            __init__ : Initialise les paramètres pour un état.
         """
 
         def __init__(self, terminal: bool = False, do_in_state_action_when_entering: bool = False, do_in_state_action_when_exiting: bool = False):
@@ -31,6 +46,12 @@ class State:
                 terminal (bool) : Si l'état est terminal. Par défaut à False.
                 do_in_state_action_when_entering (bool) : Si une action doit être exécutée à l'entrée. Par défaut à False.
                 do_in_state_action_when_exiting (bool) : Si une action doit être exécutée à la sortie. Par défaut à False.
+
+            Raises :
+                TypeError : Si les paramètres ne sont pas des booléens.
+
+            Utilisation :
+                >>> State.Parameters(terminal=True, do_in_state_action_when_entering=True, do_in_state_action_when_exiting=True)
             """
 
             if not isinstance(terminal, bool) or not isinstance(do_in_state_action_when_entering, bool) or not isinstance(do_in_state_action_when_exiting, bool):
@@ -44,6 +65,11 @@ class State:
 
         Args :
             parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
+
+        Utilisation :
+            >>> State()
+            >>> State(State.Parameters())
+
         """
         
         self.parameters : State.Parameters = parameters if parameters is not None else self.Parameters()
@@ -55,6 +81,9 @@ class State:
 
         Retourne :
             bool : True si toutes les transitions sont valides, False autrement.
+
+        Utilisation :
+            >>> state.valid
         """
         if not self.__transitions or not all(transition.valid for transition in self.__transitions):
             return False
@@ -66,6 +95,9 @@ class State:
 
         Retourne :
             bool : True si l'état est terminal, False autrement.
+
+        Utilisation :
+            >>> state.terminal
         """
         return self.parameters.terminal
 
@@ -75,6 +107,9 @@ class State:
 
         Retourne :
             bool : La transition en cours, None autrement.
+
+        Utilisation :
+            >>> state.transiting
         """
         for transition in self.__transitions:
             if transition.transiting:
@@ -86,6 +121,13 @@ class State:
 
         Args :
             transition (Transition) : La transition à ajouter.
+
+        Raises :
+            TypeError : Si la transition n'est pas une instance de Transition.
+            ValueError : Si la transition est déjà ajoutée.
+
+        Utilisation :
+            >>> state.add_transition(transition)
         """
         from Transition import Transition
         if not isinstance(transition, Transition):
@@ -95,43 +137,94 @@ class State:
         self.__transitions.append(transition)
 
     def _exec_entering_action(self) -> None:
-        """Exécute l'action associée à l'entrée dans l'état."""
+        """
+        Exécute l'action associée à l'entrée dans l'état.
+
+        Utilisation :
+            >>> state._exec_entering_action()
+        """
         self._do_entering_action()
         if self.parameters.do_in_state_action_when_entering:
             self._exec_in_state_action()
 
     def _exec_in_state_action(self) -> None:
-        """Exécute l'action associée à la présence dans l'état."""
+        """
+        Exécute l'action associée à la présence dans l'état.
+        
+        Utilisation :
+            >>> state._exec_in_state_action()
+        """
         self._do_in_state_action()
 
     def _exec_exiting_action(self) -> None:
-        """Exécute l'action associée à la sortie de l'état."""
+        """
+        Exécute l'action associée à la sortie de l'état.
+        
+        Utilisation :
+            >>> state._exec_exiting_action()
+        """
         if self.parameters.do_in_state_action_when_exiting:
             self._exec_in_state_action()
         self._do_exiting_action()
         
 
     def _do_entering_action(self) -> None:
-        """Définit l'action à exécuter à l'entrée de l'état."""
+        """
+        Définit l'action à exécuter à l'entrée de l'état.
+        
+        Utilisation :
+            >>> state._do_entering_action()
+        """
         pass
 
     def _do_in_state_action(self) -> None:
-        """Définit l'action à exécuter pendant la présence dans l'état."""
+        """
+        Définit l'action à exécuter pendant la présence dans l'état.
+        
+        Utilisation :
+            >>> state._do_in_state_action()
+        """
         pass
 
     def _do_exiting_action(self) -> None:
-        """Définit l'action à exécuter à la sortie de l'état."""
+        """
+        Définit l'action à exécuter à la sortie de l'état.
+        
+        Utilisation :
+            >>> state._do_exiting_action()
+        """
         pass
 
 class ActionState(State):
+    """
+    ActionState est une classe dérivée de State qui permet d'ajouter des actions à exécuter à l'entrée, pendant et à la sortie de l'état.
+
+    Attributs :
+        __entering_actions (List[Callable[[], None]]) : La liste des actions à exécuter à l'entrée de l'état.
+        __in_state_actions (List[Callable[[], None]]) : La liste des actions à exécuter pendant la présence dans l'état.
+        __exiting_actions (List[Callable[[], None]]) : La liste des actions à exécuter à la sortie de l'état.  
+
+    Méthodes :
+        add_entering_action : Ajoute une action à exécuter à l'entrée de l'état.
+        add_in_state_action : Ajoute une action à exécuter pendant la présence dans l'état.
+        add_exiting_action : Ajoute une action à exécuter à la sortie de l'état.
+        _do_entering_action : Exécute l'action associée à l'entrée dans l'état.
+        _do_in_state_action : Exécute l'action associée à la présence dans l'état.
+        _do_exiting_action : Exécute l'action associée à la sortie de l'état.
+    """
 
     Action = Callable[[], None]
 
     def __init__(self, parameters: Optional[State.Parameters] = None) -> None:
-        """Initialise une instance de State.
+        """
+        Initialise une instance de State.
 
         Args :
             parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
+
+        Utilisation :
+            >>> ActionState()
+            >>> ActionState(State.Parameters())
         """
         super().__init__(parameters)
         self.__entering_actions : List[self.Action] = []
@@ -139,16 +232,34 @@ class ActionState(State):
         self.__exiting_actions : List[self.Action] = []
 
     def _do_entering_action(self) -> None:
+        """
+        Exécute l'action associée à l'entrée dans l'état.
+
+        Utilisation :
+            >>> state._do_entering_action()
+        """
         super()._do_entering_action()
         for action in self.__entering_actions:
             action()
 
     def _do_in_state_action(self) -> None:
+        """
+        Exécute l'action associée à la présence dans l'état.
+
+        Utilisation :
+            >>> state._do_in_state_action()
+        """
         super()._do_in_state_action()
         for action in self.__in_state_actions:
             action()
 
     def _do_exiting_action(self) -> None:
+        """
+        Exécute l'action associée à la sortie de l'état.
+
+        Utilisation :
+            >>> state._do_exiting_action()
+        """
         super()._do_exiting_action()
         for action in self.__exiting_actions:
             action()
@@ -158,6 +269,12 @@ class ActionState(State):
 
         Args :
             action (Action) : L'action à exécuter.
+
+        Raises :
+            TypeError : Si l'action n'est pas une instance de Action.
+
+        Utilisation :
+            >>> state.add_entering_action(action)
         """
         if not callable(action):
             raise TypeError("L'action doit être une instance de Action.")
@@ -168,6 +285,12 @@ class ActionState(State):
 
         Args :
             action (Action) : L'action à exécuter.
+
+        Raises :
+            TypeError : Si l'action n'est pas une instance de Action.
+
+        Utilisation :
+            >>> state.add_in_state_action(action)
         """
         if not callable(action):
             raise TypeError("L'action doit être une instance de Action.")
@@ -178,17 +301,47 @@ class ActionState(State):
 
         Args :
             action (Action) : L'action à exécuter.
+
+        Raises :
+            TypeError : Si l'action n'est pas une instance de Action.
+
+        Utilisation :
+            >>> state.add_exiting_action(action)
         """
         if not callable(action):
             raise TypeError("L'action doit être une instance de Action.")
         self.__exiting_actions.append(action) 
 
 class MonitoredState(ActionState):
+
+    """
+    MonitoredState est une classe dérivée de ActionState qui permet de suivre les entrées et sorties de l'état.
+
+    Attributs :
+        __counter_last_entry (float) : Le compteur de la dernière entrée dans l'état.
+        __counter_last_exit (float) : Le compteur de la dernière sortie de l'état.
+        __entry_count (int) : Le nombre d'entrées dans l'état.
+        custom_value (any) : Une valeur personnalisée pour l'état.
+
+    Méthodes :
+        entry_count : Obtient le nombre d'entrées dans l'état.
+        last_entry_time : Obtient le compteur de la dernière entrée dans l'état.
+        last_exit_time : Obtient le compteur de la dernière sortie de l'état.
+        reset_entry_count : Réinitialise le compteur d'entrées.
+        reset_last_times : Réinitialise les compteurs de temps.
+        _exec_entering_action : Exécute l'action associée à l'entrée dans l'état.
+        _exec_exiting_action : Exécute l'action associée à la sortie de l'état. 
+    """
+
     def __init__(self, parameters: Optional[State.Parameters] = None) -> None:
         """Initialise une instance de State.
 
         Args :
             parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
+
+        Utilisation :
+            >>> MonitoredState()
+            >>> MonitoredState(State.Parameters())
         """
         super().__init__(parameters)
         self.__counter_last_entry : complex = 0
@@ -202,6 +355,9 @@ class MonitoredState(ActionState):
 
         Retourne :
             int : Le nombre d'entrées dans l'état.
+
+        Utilisation :
+            >>> state.entry_count
         """
         return self.__entry_count
     
@@ -211,6 +367,9 @@ class MonitoredState(ActionState):
 
         Retourne :
             float : Le compteur de la dernière entrée dans l'état.
+
+        Utilisation :
+            >>> state.last_entry_time
         """
         return self.__counter_last_entry
     
@@ -221,26 +380,49 @@ class MonitoredState(ActionState):
 
         Retourne :
             float : Le compteur de la dernière sortie de l'état.
+
+        Utilisation :
+            >>> state.last_exit_time
         """
         return self.__counter_last_exit
     
     def reset_entry_count(self) -> None:
-        """Réinitialise le compteur d'entrées."""
+        """
+        Réinitialise le compteur d'entrées.
+        
+        Utilisation :
+            >>> state.reset_entry_count()
+        """
         self.__entry_count = 0
 
     def reset_last_times(self) -> None:
-        """Réinitialise les compteurs de temps."""
+        """
+        Réinitialise les compteurs de temps.
+        
+        Utilisation :
+            >>> state.reset_last_times()
+        """
         self.__counter_last_entry = 0
         self.__counter_last_exit = 0
 
     def _exec_entering_action(self) -> None:
-        """Exécute l'action associée à l'entrée dans l'état."""
+        """
+        Exécute l'action associée à l'entrée dans l'état.
+        
+        Utilisation :
+            >>> state._exec_entering_action()
+        """
         self.__counter_last_entry = time.perf_counter()
         self.__entry_count += 1
         super()._exec_entering_action()
 
     def _exec_exiting_action(self) -> None:
-        """Exécute l'action associée à la sortie de l'état."""
+        """
+        Exécute l'action associée à la sortie de l'état.
+        
+        Utilisation :
+            >>> state._exec_exiting_action()
+        """
         super()._exec_exiting_action()
         self.__counter_last_exit = time.perf_counter()
         

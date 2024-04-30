@@ -65,6 +65,11 @@ class FiniteStateMachine:
         def __init__(self) -> None:
             """
             Initialise la disposition de la machine à états finis.
+
+            Utilisation:
+                >>> layout = FiniteStateMachine.Layout()
+                >>> state = State()
+                >>> layout.add_state(state)
             """
             self.__states: List[State] = []
             self.initial_state = None
@@ -73,6 +78,13 @@ class FiniteStateMachine:
         def initial_state(self) -> State:
             """
             Getter de l'état initial de la machine à états finis.
+
+            Returns:
+                State: L'état initial de la machine à états finis.
+
+            Utilisation:
+                >>> initial_state = layout.initial_state
+                
             """
             return self.__initial_state
 
@@ -87,6 +99,9 @@ class FiniteStateMachine:
             Raises:
                 ValueError: L'état initial doit être de type State.
                 ValueError: L'état initial doit être dans la liste des états ajoutés.
+
+            Utilisation:
+                >>> layout.initial_state = initial_state
             """
             if state is not None and not isinstance(state, State):
                 raise ValueError("initial_state must be of type State")
@@ -101,6 +116,9 @@ class FiniteStateMachine:
 
             Returns:
                 bool: La validité de la disposition de la machine à états finis.
+            
+            Utilisation:
+                >>> valid = layout.valid
             """
             for state in self.__states:
                 if not state.valid:
@@ -109,6 +127,12 @@ class FiniteStateMachine:
         
         @valid.setter
         def valid(self) -> None:
+            """
+            Setter de la validité du layout.
+
+            Raises:
+                ValueError: La validité du layout est une propriété en lecture seule.        
+            """
             raise ValueError("valid is a read-only property")
         
         def add_state(self, state) -> None:
@@ -121,6 +145,9 @@ class FiniteStateMachine:
             Raises:
                 ValueError: L'état doit être de type State.
                 ValueError: L'état doit être unique.
+
+            Utilisation:
+                >>> layout.add_state(state)                
             """
             if(not isinstance(state, State)):
                 raise ValueError("state must be of type State. Actual type is " + str(type(state)) + ".")
@@ -137,6 +164,9 @@ class FiniteStateMachine:
 
             Raises:
                 ValueError: La liste des états doit être une liste.
+
+            Utilisation:
+                >>> layout.add_states(states)
             """
             for state in states:
                 self.add_state(state)
@@ -144,6 +174,9 @@ class FiniteStateMachine:
     class OperationalState(Enum):
         """
         Représente les états opérationnels de la machine à états finis.
+
+        Utilisation:
+            >>> state = FiniteStateMachine.OperationalState.IDLE
         """
         UNINITIALIZED = auto()
         IDLE = auto()
@@ -160,6 +193,11 @@ class FiniteStateMachine:
 
         Raises:
             ValueError: Le layout n'est pas valide.
+
+        Utilisation:
+            >>> layout = FiniteStateMachine.Layout()
+            >>> fsm = FiniteStateMachine(layout)
+            >>> fsm.start()
         """
 
         if not layout.valid:
@@ -179,6 +217,9 @@ class FiniteStateMachine:
 
         Returns:
             int: L'état opérationnel actuel de la machine à états finis.
+
+        Utilisation:
+            >>> current_operational_state = fsm.current_operational_state
         """
         return self.__current_operational_state
 
@@ -189,6 +230,9 @@ class FiniteStateMachine:
 
         Raises:
             ValueError: L'état opérationnel actuel est une propriété en lecture seule.
+
+        Utilisation:
+            >>> fsm.current_operational_state = current_operational_state
         """
         raise ValueError("current_operational_state is a read-only property")
 
@@ -199,6 +243,9 @@ class FiniteStateMachine:
 
         Returns:
             State: L'état applicatif actuel de la machine à états finis.
+
+        Utilisation:
+            >>> current_applicative_state = fsm.current_applicative_state
         """
         return self.__current_applicative_state
 
@@ -209,12 +256,18 @@ class FiniteStateMachine:
 
         Raises:
             ValueError: L'état applicatif actuel est une propriété en lecture seule.
+
+        Utilisation:
+            >>> fsm.current_applicative_state = current_applicative_state
         """
         raise ValueError("current_applicative_state is a read-only property")
 
     def reset(self):
         """
         Réinitialise la machine à états finis à son état initial.
+
+        Utilisation:
+            >>> fsm.reset()
         """
         self.__current_operational_state = self.OperationalState.IDLE
         self.__current_applicative_state = self.__layout.initial_state
@@ -225,6 +278,9 @@ class FiniteStateMachine:
         
         Args:
             transition (Transition): La transition à effectuer.
+
+        Utilisation:
+            >>> fsm._transit_by(transition)
         """
         self.current_applicative_state._exec_exiting_action()
         transition._exec_transiting_action()
@@ -237,6 +293,9 @@ class FiniteStateMachine:
 
         Args:
             state (State): L'état vers lequel effectuer la transition.
+
+        Utilisation:
+            >>> fsm.transit_to(state)
         """
         self.current_applicative_state._exec_exiting_action()
         self.__current_applicative_state = state
@@ -251,6 +310,9 @@ class FiniteStateMachine:
 
         Raises:
             ValueError: current_applicative_state est None.
+
+        Utilisation:
+            >>> run = fsm.track()
         """
         if self.current_applicative_state is None:
             raise ValueError("current_applicative_state is None")
@@ -275,6 +337,9 @@ class FiniteStateMachine:
         Args:
             reset (bool): Indique si la machine à états finis doit être réinitialisée.
             time_budget (float): Le budget de temps pour lequel la machine à états finis doit fonctionner.
+
+        Utilisation:
+            >>> fsm.start()
         """
         if reset:
             self.reset()
@@ -291,6 +356,9 @@ class FiniteStateMachine:
     def stop(self):
         """
         Arrête la machine à états finis, en définissant son état opérationnel sur IDLE.
+
+        Utilisation:
+            >>> fsm.stop()
         """
         self.__current_operational_state = self.OperationalState.IDLE
     
