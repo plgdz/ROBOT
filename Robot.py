@@ -26,6 +26,14 @@ class Robot():
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
 
+    def is_instanciated(self) -> bool:
+        if isinstance(self.__gpg, gpg.EasyGoPiGo3):
+            return True
+        return False
+    
+    def has_integrity(self) -> bool:
+        pass
+
     #--------------------------------------------------------------------------------------------
 
     def turn_on_left_led(self) -> None:
