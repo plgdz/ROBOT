@@ -19,7 +19,6 @@ class Robot():
         from EyeBlinker import EyeBlinker
 
         # self.__gpg = gpg.EasyGoPiGo3()
-        # self.led_blinker = LedBlinker(self.__gpg)
 
         self.right_eye_color = None
         self.left_eye_color = None
