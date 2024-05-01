@@ -552,5 +552,4 @@ class SideBlinker():
             >>> side_blinker.track()
         """
         self.__left_blinker.track()
-        print("    ", end="")
         self.__right_blinker.track()
