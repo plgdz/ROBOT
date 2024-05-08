@@ -133,7 +133,8 @@ class ConditionalTransition(Transition):
             raise TypeError("condition must be of type Condition")
         self.__condition : Condition = condition
     
-    def is_transiting(self) -> bool:
+    @property
+    def transiting(self) -> bool:
         """
         Évalue la condition pour déterminer si la transition doit avoir lieu.
 
@@ -776,3 +777,18 @@ class TimedCondition(Condition):
         """
         self.__counter_duration = perf_counter() - self.__time_reference
         return self.__counter_duration >= self.__duration
+    
+class RobotCondition(Condition):
+    def __init__(self, robot : Robot, inverse: bool = False) -> None:
+        super().__init__(inverse)
+        if not isinstance(robot, Robot):
+            raise TypeError("robot must be of type Robot")
+        self._robot: Robot = robot
+
+class ManualControlCondition(RobotCondition):
+    def __init__(self, robot : Robot, expected_value : Robot.MoveDirection, inverse: bool = False):
+        super().__init__(robot, inverse)
+        self.__expected_value = expected_value
+        
+    def _compare(self):
+        return self._robot.read_input() == self.__expected_value

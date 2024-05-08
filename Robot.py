@@ -1,4 +1,10 @@
+<<<<<<< Updated upstream
 import easygopigo3 as gpg
+=======
+from enum import Enum, auto
+import easygopigo3 as gpg
+
+>>>>>>> Stashed changes
 
 class Robot():
 
@@ -12,6 +18,33 @@ class Robot():
         'white': (255, 255, 255),
         'off': (0, 0, 0)
     }
+    
+    class KeyCodes(Enum):
+        NONE = 0
+        UP = 1
+        LEFT = 2
+        OK = 3
+        RIGHT = 4 
+        DOWN = 5
+        ONE = 6
+        TWO = 7
+        THREE = 8
+        FOUR = 9
+        FIVE = 10
+        SIX = 11
+        SEVEN = 12
+        EIGHT = 13
+        NINE = 14
+        STAR = 15
+        ZERO = 16
+        HASH = 17
+    
+    class MoveDirection(Enum):
+        FORWARD = auto()
+        BACKWARD = auto()
+        LEFT = auto()
+        RIGHT = auto()
+        STOP = auto()
 
     def __init__(self) -> None:
         from LedBlinker import LedBlinker
@@ -31,6 +64,9 @@ class Robot():
 
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
+        self.__robot = gpg.EasyGoPiGo3()
+        remote_control_port = 'AD1'
+        self.__remote_control = self.__robot.init_remote(port=remote_control_port)
 
     # -------------------------------------------------------------------------
     def init_remote(self):
@@ -72,6 +108,7 @@ class Robot():
 
 
     def turn_on_left_led(self) -> None:
+<<<<<<< Updated upstream
         self.__gpg.led_on('left')
         #print("turn_on_left_led")
 
@@ -86,6 +123,22 @@ class Robot():
     def turn_off_right_led(self) -> None:
         self.__gpg.led_off('right')
         #print("turn_off_right_led")
+=======
+        self.__robot.led_on('left')
+        print("turn_on_left_led")
+
+    def turn_off_left_led(self) -> None:
+        self.__robot.led_off('left')
+        print("turn_off_left_led")
+
+    def turn_on_right_led(self) -> None:
+        self.__robot.led_on('right')
+        print("turn_on_right_led")
+
+    def turn_off_right_led(self) -> None:
+        self.__robot.led_off('right')
+        print("turn_off_right_led")
+>>>>>>> Stashed changes
 
     #--------------------------------------------------------------------------------------------
 
@@ -126,8 +179,28 @@ class Robot():
         #print(f"turn_on_eyes : {self.right_eye_color} {self.left_eye_color}")
 
     def turn_off_eyes(self) -> None:
+<<<<<<< Updated upstream
         self.__gpg.close_eyes()
         #print("turn_off_eyes")
+=======
+        # self.__gpg.close_eyes()
+        print("turn_off_eyes")
+        
+    def move(self, config):
+        if config == Robot.MoveDirection.FORWARD:
+            self.__robot.forward()
+        elif config == Robot.MoveDirection.RIGHT:
+            self.__robot.right()
+        elif config == Robot.MoveDirection.LEFT:
+            self.__robot.left()
+        elif config == Robot.MoveDirection.BACKWARD:
+            self.__robot.backward()
+        elif config == Robot.MoveDirection.STOP:
+            self.__robot.stop()
+        
+    def read_input(self):
+        return Robot.KeyCodes(self.__remote_control.read())
+>>>>>>> Stashed changes
 
     def forward(self) -> None:
         self.__gpg.forward()
