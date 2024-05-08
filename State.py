@@ -86,6 +86,8 @@ class State:
             >>> state.valid
         """
         if not self.__transitions or not all(transition.valid for transition in self.__transitions):
+            if self.terminal:
+                return True
             return False
         return True
 
