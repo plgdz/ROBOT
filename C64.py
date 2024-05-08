@@ -3,6 +3,7 @@ from State import ActionState, MonitoredState
 from Condition import StateValueCondition, StateEntryDurationCondition, AlwaysTrueCondition
 from Transition import ConditionalTransition
 from Robot import Robot
+from ManualControl import ManualControlFSM
 
 class C64(FiniteStateMachine):
     def __init__(self):
@@ -57,8 +58,25 @@ class C64(FiniteStateMachine):
 
         end = ActionState(ActionState.Parameters(terminal=True))
 
-        home = MonitoredState(ActionState.Parameters(terminal=True))
+        home = MonitoredState()
         home.add_entering_action(lambda : print("Robot is home"))
+
+        task1 = MonitoredState()
+        task1.custom_value = ManualControlFSM(robot=self.robot)
+        
+        def task1_eyes_entering_action():
+            self.robot.set_left_eye_color("red")
+            self.robot.set_right_eye_color("blue")
+            self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT_RECIPROCAL, cycle_duration=0.5, percent_on=0.5, begin_on=True)
+            
+        def task1_eyes_exiting_action():
+            self.robot.turn_off_eyes()
+
+        task1.add_entering_action(lambda: print("Task 1"))
+        task1.add_entering_action(task1_eyes_entering_action)
+        task1.add_in_state_action(lambda: task1.custom_value.track())
+        task1.add_exiting_action(task1_eyes_exiting_action)
+
 
         # --------- ROBOT INSTANTIATION ---------
         robot_instantiation_succeeded = StateValueCondition(expected_value=True, monitored_state=robot_instantiation)
@@ -100,8 +118,19 @@ class C64(FiniteStateMachine):
         shut_down_robot_to_end = ConditionalTransition(next_state=end, condition=shut_down_robot_duration)
         shut_down_robot.add_transition(shut_down_robot_to_end)
 
+        # --------- HOME ---------
+        home_duration = AlwaysTrueCondition()
+        home_to_task1 = ConditionalTransition(next_state=task1, condition=home_duration)
+        home.add_transition(home_to_task1)
+        
+        # --------- TASK 1 ------------
+        task1_duration = StateEntryDurationCondition(duration=3600, monitored_state=task1)
+        task1_to_home = ConditionalTransition(next_state=task1, condition=task1_duration)
+        task1.add_transition(task1_to_home)
+
+
 
         self.layout = FiniteStateMachine.Layout()
-        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home])
+        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1])
         self.layout.initial_state = robot_instantiation
         super().__init__(layout=self.layout)

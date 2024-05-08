@@ -530,8 +530,10 @@ class SideBlinker():
         """
         if side == side.LEFT:
             self.__left_blinker.blink(**kwargs)
+            self.__right_blinker.turn_off()
         elif side == side.RIGHT:
             self.__right_blinker.blink(**kwargs)
+            self.__left_blinker.turn_off()
         elif side == side.BOTH:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.blink(**kwargs)

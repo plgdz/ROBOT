@@ -3,17 +3,24 @@ from Condition import ManualControlCondition
 from State import ManualControlState
 from FiniteStateMachine import FiniteStateMachine
 from Transition import ConditionalTransition
+from typing import TYPE_CHECKING
+from Robot import Robot
+from Blinker import SideBlinker
+if TYPE_CHECKING:
+    from Robot import Robot
 
 
 
 class ManualControlFSM(FiniteStateMachine):
     def __init__(self, robot):
         self.__robot = robot
-        self.state_stop = self.__create_state(Robot.MoveDirection.STOP)
-        state_forward = self.__create_state(Robot.MoveDirection.FORWARD)
-        state_backward = self.__create_state(Robot.MoveDirection.BACKWARD)
-        state_left = self.__create_state(Robot.MoveDirection.LEFT)
-        state_right = self.__create_state(Robot.MoveDirection.RIGHT)
+        
+        self.state_stop = self.__create_state(Robot.MoveDirection.STOP, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)
+        state_forward = self.__create_state(Robot.MoveDirection.FORWARD, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= 1.0, percent_on = .25, begin_on =True)
+        state_backward = self.__create_state(Robot.MoveDirection.BACKWARD, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= 1.0, percent_on = .75, begin_on =True)
+        state_left = self.__create_state(Robot.MoveDirection.LEFT, side=self.__robot.eye_blinker.Side.LEFT, cycle_duration= 1.0, percent_on = .5, begin_on =True)
+        state_right = self.__create_state(Robot.MoveDirection.RIGHT, side=self.__robot.eye_blinker.Side.RIGHT, cycle_duration= 1.0, percent_on = .5, begin_on =True)
+        
         
         self.__connect(state_forward, Robot.KeyCodes.UP)
         self.__connect(state_backward, Robot.KeyCodes.DOWN)
@@ -32,15 +39,26 @@ class ManualControlFSM(FiniteStateMachine):
 
         super().__init__(layout)
         
-        # del self.state_stop
         
-        
-    def __create_state(self, direction):
-        return ManualControlState(robot=self.__robot, move_configuration=direction)
+    def __create_state(self, direction, side = None, cycle_duration = 1.0, percent_on = .5, begin_on = True, off = False):
+        return ManualControlState(robot=self.__robot, move_configuration=direction, side = side, cycle_duration  = cycle_duration, percent_on = percent_on, begin_on = begin_on, off = off)
     
     def __connect(self, state, key):
         self.state_stop.add_transition(ConditionalTransition(next_state=state, condition=ManualControlCondition(self.__robot, key)))
         state.add_transition(ConditionalTransition(next_state=self.state_stop, condition=ManualControlCondition(self.__robot, key, inverse=True)))
         
     
+# from Robot import Robot
+# from Condition import ManualControlCondition
+# from State import ManualControlState
+# from FiniteStateMachine import FiniteStateMachine
+# from Transition import ConditionalTransition
+
+
         
+    
+    
+    
+        
+    
+               

@@ -789,7 +789,7 @@ class RobotCondition(Condition):
         self._robot: Robot = robot
 
 class ManualControlCondition(RobotCondition):
-    def __init__(self, robot : 'Robot', expected_value : 'Robot'.MoveDirection, inverse: bool = False):
+    def __init__(self, robot : 'Robot', expected_value : 'Robot.MoveDirection', inverse: bool = False):
         super().__init__(robot, inverse)
         self.__expected_value = expected_value
         
