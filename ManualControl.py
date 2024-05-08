@@ -1,28 +1,10 @@
 from Robot import Robot
-from Condition import RobotCondition, ManualControlCondition
+from Condition import ManualControlCondition
+from State import ManualControlState
+from FiniteStateMachine import FiniteStateMachine
+from Transition import ConditionalTransition
 
-class RobotState(State):
-    def __init__(self, robot: Robot, parameters: Optional[State.Parameters] = None):
-        if not isinstance(robot, Robot):
-            raise TypeError("robot must be of type Robot")
-        super().__init__(parameters)  
-        self._robot: Robot = robot
 
-class ManualControlState(RobotState):
-    def __init__(self, robot: Robot, move_configuration: Robot.MoveDirection, parameters: Optional[State.Parameters] = None):
-        self.__move_config = move_configuration
-        super().__init__(robot, parameters)
-        
-    def _do_entering_action(self) -> None:
-        super()._do_entering_action()
-        self._robot.move(self.__move_config)
-            
-    def _do_in_state_action(self) -> None:
-        super()._do_in_state_action()
-        
-    def _do_exiting_action(self) -> None:
-        super()._do_exiting_action()
-        self._robot.move(Robot.MoveDirection.STOP)
 
 class ManualControlFSM(FiniteStateMachine):
     def __init__(self, robot):

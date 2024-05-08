@@ -3,6 +3,7 @@ from typing import Callable, List, Optional, TYPE_CHECKING
 import time
 if TYPE_CHECKING:
     from Transition import Transition
+    from Robot import Robot
 
 class State:
     """Représente un état dans une machine à états.
@@ -428,3 +429,26 @@ class MonitoredState(ActionState):
         super()._exec_exiting_action()
         self.__counter_last_exit = time.perf_counter()
         
+class RobotState(State):
+    def __init__(self, robot: 'Robot', parameters: Optional[State.Parameters] = None):
+        from Robot import Robot
+        if not isinstance(robot, Robot):
+            raise TypeError("robot must be of type Robot")
+        super().__init__(parameters)  
+        self._robot: Robot = robot
+
+class ManualControlState(RobotState):
+    def __init__(self, robot: 'Robot', move_configuration: 'Robot'.MoveDirection, parameters: Optional[State.Parameters] = None):
+        self.__move_config = move_configuration
+        super().__init__(robot, parameters)
+        
+    def _do_entering_action(self) -> None:
+        super()._do_entering_action()
+        self._robot.move(self.__move_config)
+            
+    def _do_in_state_action(self) -> None:
+        super()._do_in_state_action()
+        
+    def _do_exiting_action(self) -> None:
+        super()._do_exiting_action()
+        self._robot.move(Robot.MoveDirection.STOP)

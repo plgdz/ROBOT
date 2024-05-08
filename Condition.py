@@ -1,8 +1,10 @@
 from State import State, MonitoredState
 from abc import abstractmethod
 from Transition import Transition
-from typing import List
+from typing import List, TYPE_CHECKING
 from time import perf_counter
+if TYPE_CHECKING:
+    from Robot import Robot
 
 class Condition:
     """
@@ -779,14 +781,15 @@ class TimedCondition(Condition):
         return self.__counter_duration >= self.__duration
     
 class RobotCondition(Condition):
-    def __init__(self, robot : Robot, inverse: bool = False) -> None:
+    def __init__(self, robot : 'Robot', inverse: bool = False) -> None:
+        from Robot import Robot
         super().__init__(inverse)
         if not isinstance(robot, Robot):
             raise TypeError("robot must be of type Robot")
         self._robot: Robot = robot
 
 class ManualControlCondition(RobotCondition):
-    def __init__(self, robot : Robot, expected_value : Robot.MoveDirection, inverse: bool = False):
+    def __init__(self, robot : 'Robot', expected_value : 'Robot'.MoveDirection, inverse: bool = False):
         super().__init__(robot, inverse)
         self.__expected_value = expected_value
         

@@ -1,10 +1,5 @@
-<<<<<<< Updated upstream
-import easygopigo3 as gpg
-=======
 from enum import Enum, auto
 import easygopigo3 as gpg
-
->>>>>>> Stashed changes
 
 class Robot():
 
@@ -64,38 +59,36 @@ class Robot():
 
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
-        self.__robot = gpg.EasyGoPiGo3()
-        remote_control_port = 'AD1'
-        self.__remote_control = self.__robot.init_remote(port=remote_control_port)
+        
 
     # -------------------------------------------------------------------------
     def init_remote(self):
         remote_control_port = 'AD1'
         try:
-            self.remote = self.__gpg.init_remote(port=remote_control_port)
+            self.__remote_control = self.__gpg.init_remote(port=remote_control_port)
         except:
-            self.remote = None
+            self.__remote_control = None
        
     def init_servo_motor(self):
         servo_cam_port = 'SERVO1'
         servo_range_port = 'SERVO2'
 
         try:
-            self.camera_servo_control = self.__gpg.init_servo(port=servo_cam_port)
+            self.__camera_servo_control = self.__gpg.init_servo(port=servo_cam_port)
         except:
-            self.camera_servo_control = None
+            self.__camera_servo_control = None
 
         try:
-            self.range_sensor_servo_control = self.__gpg.init_servo(port=servo_range_port)
+            self.__range_sensor_servo_control = self.__gpg.init_servo(port=servo_range_port)
         except:
-            self.range_sensor_servo_control = None
+            self.__range_sensor_servo_control = None
 
     def init_distance_sensor(self):
         distance_sensor_port = 'I2C'
         try:
-            self.distance_sensor = self.__gpg.init_distance_sensor(port=distance_sensor_port)
+            self.__distance_sensor = self.__gpg.init_distance_sensor(port=distance_sensor_port)
         except:
-            self.distance_sensor = None
+            self.__distance_sensor = None
 
     # -------------------------------------------------------------------------
     @property
@@ -104,42 +97,21 @@ class Robot():
     
     @property
     def has_integrity(self) -> bool:
-        return self.remote is not None and self.camera_servo_control is not None and self.range_sensor_servo_control is not None and self.distance_sensor is not None
+        return self.__remote_control is not None and self.__camera_servo_control is not None and self.__range_sensor_servo_control is not None and self.__distance_sensor is not None
 
 
     def turn_on_left_led(self) -> None:
-<<<<<<< Updated upstream
         self.__gpg.led_on('left')
-        #print("turn_on_left_led")
 
     def turn_off_left_led(self) -> None:
         self.__gpg.led_off('left')
-        #print("turn_off_left_led")
 
     def turn_on_right_led(self) -> None:
         self.__gpg.led_on('right')
-        #print("turn_on_right_led")
-
+        
     def turn_off_right_led(self) -> None:
         self.__gpg.led_off('right')
-        #print("turn_off_right_led")
-=======
-        self.__robot.led_on('left')
-        print("turn_on_left_led")
-
-    def turn_off_left_led(self) -> None:
-        self.__robot.led_off('left')
-        print("turn_off_left_led")
-
-    def turn_on_right_led(self) -> None:
-        self.__robot.led_on('right')
-        print("turn_on_right_led")
-
-    def turn_off_right_led(self) -> None:
-        self.__robot.led_off('right')
-        print("turn_off_right_led")
->>>>>>> Stashed changes
-
+        
     #--------------------------------------------------------------------------------------------
 
     def set_left_eye_color(self, color : str) -> None:
@@ -162,57 +134,32 @@ class Robot():
 
     def turn_on_right_eye(self) -> None:
         self.__gpg.open_right_eye()
-        #print(f"turn_on_right_eye : {self.right_eye_color}")
 
     def turn_off_right_eye(self) -> None:
         self.__gpg.close_right_eye()
-        #print("turn_off_right_eye")
 
     def set_eyes_color(self, color : str) -> None:
         self.__gpg.set_eye_color(self.COLORS[color])
-        #print(f'set_eyes_color : {self.COLORS[color]}')
         self.left_eye_color = color
         self.right_eye_color = color
 
     def turn_on_eyes(self) -> None:
         self.__gpg.open_eyes()
-        #print(f"turn_on_eyes : {self.right_eye_color} {self.left_eye_color}")
-
-    def turn_off_eyes(self) -> None:
-<<<<<<< Updated upstream
-        self.__gpg.close_eyes()
-        #print("turn_off_eyes")
-=======
-        # self.__gpg.close_eyes()
-        print("turn_off_eyes")
         
+    def turn_off_eyes(self) -> None:
+        self.__gpg.close_eyes()
+   
     def move(self, config):
         if config == Robot.MoveDirection.FORWARD:
-            self.__robot.forward()
+            self.__gpg.forward()
         elif config == Robot.MoveDirection.RIGHT:
-            self.__robot.right()
+            self.__gpg.right()
         elif config == Robot.MoveDirection.LEFT:
-            self.__robot.left()
+            self.__gpg.left()
         elif config == Robot.MoveDirection.BACKWARD:
-            self.__robot.backward()
+            self.__gpg.backward()
         elif config == Robot.MoveDirection.STOP:
-            self.__robot.stop()
+            self.__gpg.stop()
         
     def read_input(self):
         return Robot.KeyCodes(self.__remote_control.read())
->>>>>>> Stashed changes
-
-    def forward(self) -> None:
-        self.__gpg.forward()
-
-    def backward(self) -> None:
-        self.__gpg.backward()
-
-    def stop(self) -> None:
-        self.__gpg.stop()
-
-    def turn_right(self) -> None:
-        self.__gpg.right()
-
-    def turn_left(self) -> None:
-        self.__gpg.left()
