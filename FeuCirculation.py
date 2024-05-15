@@ -1,12 +1,12 @@
 from typing import Callable
 from FiniteStateMachine import FiniteStateMachine
-from State import MonitoredState
+from State import MonitoredState, State
 from Transition import MonitoredTransition
 from Condition import StateEntryDurationCondition
 
 class TrafficLight(FiniteStateMachine):
         
-    StateGenerator = Callable[[], MonitoredState]
+    StateGenerator = Callable[[], State]
 
     def __init__(self,  red_state_generator:      StateGenerator, 
                         yellow_state_generator:   StateGenerator, 
@@ -56,3 +56,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # ***\n*****\n ***
