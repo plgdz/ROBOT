@@ -32,6 +32,7 @@ class WonderingFSM(FiniteStateMachine):
         self.state_wonder.add_transition(ConditionalTransition(next_state=self.state_wonder, condition=StateEntryDurationCondition(duration=2.0, monitored_state=self.state_wonder)))
         self.state_wonder.add_transition(ConditionalTransition(next_state=self.state_rotate, condition=DistanceSensorCondition(self.__robot)))
         self.state_stop.add_transition(ConditionalTransition(next_state=self.state_wonder, condition=StateEntryDurationCondition(duration=2.0, monitored_state=self.state_stop)))
+        self.state_rotate.add_transition(ConditionalTransition(next_state=self.state_stop, condition=StateEntryDurationCondition(duration=5.0, monitored_state=self.state_rotate)))
 
         layout = FiniteStateMachine.Layout()
         layout.add_states([
