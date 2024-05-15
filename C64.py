@@ -81,7 +81,6 @@ class C64(FiniteStateMachine):
         task2 = MonitoredState()
         task2.custom_value = WonderingFSM(robot=self.robot)
 
-
         # --------- ROBOT INSTANTIATION ---------
         robot_instantiation_succeeded = StateValueCondition(expected_value=True, monitored_state=robot_instantiation)
         robot_instantiation_failed = StateValueCondition(expected_value=False, monitored_state=robot_instantiation)
@@ -124,17 +123,24 @@ class C64(FiniteStateMachine):
 
         # --------- HOME ---------
         home_duration = AlwaysTrueCondition()
-        home_to_task1 = ConditionalTransition(next_state=task1, condition=home_duration)
-        home.add_transition(home_to_task1)
+        # home_to_task1 = ConditionalTransition(next_state=task1, condition=home_duration)
+        home_to_task2 = ConditionalTransition(next_state=task2, condition=home_duration)
+        # home.add_transition(home_to_task1)
+        home.add_transition(home_to_task2)
         
         # --------- TASK 1 ------------
         task1_duration = StateEntryDurationCondition(duration=3600, monitored_state=task1)
         task1_to_home = ConditionalTransition(next_state=task1, condition=task1_duration)
         task1.add_transition(task1_to_home)
 
+        # --------- TASK 2 ------------
+        task2_duration = StateEntryDurationCondition(duration=3600, monitored_state=task2)
+        task2_to_home = ConditionalTransition(next_state=task2, condition=task2_duration)
+        task2.add_transition(task2_to_home)
+
 
 
         self.layout = FiniteStateMachine.Layout()
-        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1])
+        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1, task2])
         self.layout.initial_state = robot_instantiation
         super().__init__(layout=self.layout)
