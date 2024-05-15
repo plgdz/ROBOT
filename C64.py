@@ -1,6 +1,7 @@
 from FiniteStateMachine import FiniteStateMachine
 from State import ActionState, MonitoredState
 from Condition import StateValueCondition, StateEntryDurationCondition, AlwaysTrueCondition
+from WonderingFSM import WonderingFSM
 from Transition import ConditionalTransition
 from Robot import Robot
 from ManualControl import ManualControlFSM
@@ -77,6 +78,9 @@ class C64(FiniteStateMachine):
         task1.add_in_state_action(lambda: task1.custom_value.track())
         task1.add_exiting_action(task1_eyes_exiting_action)
 
+        task2 = MonitoredState()
+        task2.custom_value = WonderingFSM(robot=self.robot)
+
 
         # --------- ROBOT INSTANTIATION ---------
         robot_instantiation_succeeded = StateValueCondition(expected_value=True, monitored_state=robot_instantiation)
@@ -88,7 +92,7 @@ class C64(FiniteStateMachine):
         robot_instantiation.add_transition(robot_instantiation_to_robot_integrity)
         robot_instantiation.add_transition(robot_instantiation_to_instanciation_failed)
         
-         # --------- INSTANTIATION FAILED ---------
+        # --------- INSTANTIATION FAILED ---------
         instantiation_failed_condition = AlwaysTrueCondition()
         instantiation_failed_to_end = ConditionalTransition(next_state=end, condition=instantiation_failed_condition)
         instantiation_failed.add_transition(instantiation_failed_to_end)

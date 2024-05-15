@@ -788,6 +788,14 @@ class RobotCondition(Condition):
             raise TypeError("robot must be of type Robot")
         self._robot: Robot = robot
 
+class DistanceSensorCondition(RobotCondition):
+    def __init__(self, robot : 'Robot', inverse: bool = False):
+        super().__init__(robot, inverse)
+        self.__expected_value = True
+        
+    def _compare(self):
+        return self._robot.reached_max_distance() == self.__expected_value
+
 class ManualControlCondition(RobotCondition):
     def __init__(self, robot : 'Robot', expected_value : 'Robot.MoveDirection', inverse: bool = False):
         super().__init__(robot, inverse)

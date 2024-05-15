@@ -1,4 +1,5 @@
 # Version: 1.0
+import random
 from typing import Callable, List, Optional, TYPE_CHECKING
 import time
 from Robot import Robot
@@ -430,7 +431,7 @@ class MonitoredState(ActionState):
         super()._exec_exiting_action()
         self.__counter_last_exit = time.perf_counter()
         
-class RobotState(State):
+class RobotState(MonitoredState):
     def __init__(self, robot: 'Robot', parameters: Optional[State.Parameters] = None):
         from Robot import Robot
         if not isinstance(robot, Robot):
@@ -458,6 +459,42 @@ class ManualControlState(RobotState):
             print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
             self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
         self._robot.move(self.__move_config)
+            
+    def _do_in_state_action(self) -> None:
+        if self.off:
+            self._robot.turn_off_left_led()
+            self._robot.turn_off_right_led()
+        self._robot.led_blinker.track()
+        self._robot.eye_blinker.track()
+        super()._do_in_state_action()
+        
+    def _do_exiting_action(self) -> None:
+        super()._do_exiting_action()
+        self._robot.led_blinker.track()
+        self._robot.move(Robot.MoveDirection.STOP)
+
+class WonderState(RobotState):
+    from Robot import Robot
+    def __init__(self, robot: 'Robot', parameters: Optional[State.Parameters] = None, side : 'Robot.Side' = None, cycle_duration : float = 1.0, percent_on: float = .5, begin_on : bool = True, off=False):
+        self.off = off
+        self.side = side
+        self.cycle_duration = cycle_duration
+        self.percent_on = percent_on
+        self.begin_on = begin_on
+        super().__init__(robot, parameters)
+        
+    def __random_move(self):
+        return random.choice([Robot.MoveDirection.FORWARD, Robot.MoveDirection.LEFT, Robot.MoveDirection.RIGHT])
+    
+    def _do_entering_action(self) -> None:
+        super()._do_entering_action()
+        if self.off:
+            self._robot.turn_off_left_led()
+            self._robot.turn_off_right_led()
+        else:
+            print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
+            self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
+        self._robot.move(self.__random_move())
             
     def _do_in_state_action(self) -> None:
         if self.off:

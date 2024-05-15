@@ -40,6 +40,7 @@ class Robot():
         LEFT = auto()
         RIGHT = auto()
         STOP = auto()
+        ROTATE = auto()
 
     def __init__(self) -> None:
         from LedBlinker import LedBlinker
@@ -56,6 +57,7 @@ class Robot():
 
         self.right_eye_color = None
         self.left_eye_color = None
+        self.max_distance = 100.0
 
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
@@ -68,7 +70,7 @@ class Robot():
             self.__remote_control = self.__gpg.init_remote(port=remote_control_port)
         except:
             self.__remote_control = None
-       
+
     def init_servo_motor(self):
         servo_cam_port = 'SERVO1'
         servo_range_port = 'SERVO2'
@@ -148,7 +150,7 @@ class Robot():
         
     def turn_off_eyes(self) -> None:
         self.__gpg.close_eyes()
-   
+
     def move(self, config):
         if config == Robot.MoveDirection.FORWARD:
             self.__gpg.forward()
@@ -160,6 +162,16 @@ class Robot():
             self.__gpg.backward()
         elif config == Robot.MoveDirection.STOP:
             self.__gpg.stop()
+        elif config == Robot.MoveDirection.ROTATE:
+            self.__gpg.turn_degrees(1980)
         
     def read_input(self):
         return Robot.KeyCodes(self.__remote_control.read())
+    
+    def read_distance_sensor(self):
+        # returns the distance in mm (float)
+        return self.__distance_sensor.read_mm()
+    
+    def reached_max_distance(self):
+        # returns the distance in mm (float)
+        return self.__distance_sensor.read_mm() <= self.max_distance
