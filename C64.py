@@ -1,10 +1,11 @@
 from FiniteStateMachine import FiniteStateMachine
-from State import ActionState, MonitoredState
+from State import ActionState, MonitoredState, TaskState
 from Condition import StateValueCondition, StateEntryDurationCondition, AlwaysTrueCondition
 from WonderingFSM import WonderingFSM
 from Transition import ConditionalTransition
 from Robot import Robot
 from ManualControl import ManualControlFSM
+from time import perf_counter
 
 class C64(FiniteStateMachine):
     def __init__(self):
@@ -61,21 +62,33 @@ class C64(FiniteStateMachine):
 
         home = MonitoredState()
         home.add_entering_action(lambda : print("Robot is home"))
+        def home_listen_input():
+            home.custom_value = self.robot.read_input(read_once=True)
+            print(f'\rkey = {home.custom_value}', end='                                   ')
+        home.add_in_state_action(home_listen_input)
+        def home_reset_input():
+            home.custom_value = self.robot.KeyCodes.NONE
+            print(f'\rkey exit home = {home.custom_value}', end='                                   ')
+        home.add_exiting_action(home_reset_input)
 
-        task1 = MonitoredState()
-        task1.custom_value = ManualControlFSM(robot=self.robot)
+        task1 = TaskState()  
+        task1.task_value = ManualControlFSM(robot=self.robot)
         
         def task1_eyes_entering_action():
             self.robot.set_left_eye_color("red")
             self.robot.set_right_eye_color("blue")
             self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT_RECIPROCAL, cycle_duration=0.5, percent_on=0.5, begin_on=True)
-            
+
+        def task1_eyes_in_state_action():
+            task1.custom_value = self.robot.read_input()
+            task1.task_value.track()
+
         def task1_eyes_exiting_action():
             self.robot.turn_off_eyes()
 
         task1.add_entering_action(lambda: print("Task 1"))
         task1.add_entering_action(task1_eyes_entering_action)
-        task1.add_in_state_action(lambda: task1.custom_value.track())
+        task1.add_in_state_action(task1_eyes_in_state_action)
         task1.add_exiting_action(task1_eyes_exiting_action)
 
         task2 = MonitoredState()
@@ -122,22 +135,19 @@ class C64(FiniteStateMachine):
         shut_down_robot.add_transition(shut_down_robot_to_end)
 
         # --------- HOME ---------
-        home_duration = AlwaysTrueCondition()
-        # home_to_task1 = ConditionalTransition(next_state=task1, condition=home_duration)
-        home_to_task2 = ConditionalTransition(next_state=task2, condition=home_duration)
-        # home.add_transition(home_to_task1)
-        home.add_transition(home_to_task2)
+        home_to_task1 = ConditionalTransition(next_state=task1, condition=StateValueCondition(expected_value=self.robot.KeyCodes.ONE, monitored_state=home))
+        home_to_shut_down_robot = ConditionalTransition(next_state=shut_down_robot, condition=StateValueCondition(expected_value=self.robot.KeyCodes.OK, monitored_state=home))
+        home.add_transition(home_to_task1)
+        home.add_transition(home_to_shut_down_robot)
         
         # --------- TASK 1 ------------
-        task1_duration = StateEntryDurationCondition(duration=3600, monitored_state=task1)
-        task1_to_home = ConditionalTransition(next_state=task1, condition=task1_duration)
+        task1_to_home = ConditionalTransition(next_state=home, condition=StateValueCondition(expected_value=self.robot.KeyCodes.OK, monitored_state=task1))
         task1.add_transition(task1_to_home)
 
         # --------- TASK 2 ------------
         task2_duration = StateEntryDurationCondition(duration=3600, monitored_state=task2)
         task2_to_home = ConditionalTransition(next_state=task2, condition=task2_duration)
         task2.add_transition(task2_to_home)
-
 
 
         self.layout = FiniteStateMachine.Layout()

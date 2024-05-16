@@ -1,4 +1,5 @@
 from enum import Enum, auto
+import time
 import easygopigo3 as gpg
 
 class Robot():
@@ -58,6 +59,8 @@ class Robot():
         self.right_eye_color = None
         self.left_eye_color = None
         self.max_distance = 100.0
+
+        self.__current_key = self.KeyCodes.NONE
 
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
@@ -165,13 +168,13 @@ class Robot():
         elif config == Robot.MoveDirection.ROTATE:
             self.__gpg.turn_degrees(1980)
         
-    def read_input(self):
+    def read_input(self, read_once : bool = False):    
+        if read_once:
+            t_start = time.perf_counter()
+            key_pressed = self.__remote_control.read()
+            while time.perf_counter() - t_start < 1:
+                print(f'\rtest', end='          ')
+            return Robot.KeyCodes(key_pressed)
+
         return Robot.KeyCodes(self.__remote_control.read())
     
-    def read_distance_sensor(self):
-        # returns the distance in mm (float)
-        return self.__distance_sensor.read_mm()
-    
-    def reached_max_distance(self):
-        # returns the distance in mm (float)
-        return self.__distance_sensor.read_mm() <= self.max_distance

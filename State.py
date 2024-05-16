@@ -6,6 +6,7 @@ from Robot import Robot
 if TYPE_CHECKING:
     from Transition import Transition
     from Robot import Robot
+    from FiniteStateMachine import FiniteStateMachine
 
 class State:
     """Représente un état dans une machine à états.
@@ -431,7 +432,32 @@ class MonitoredState(ActionState):
         super()._exec_exiting_action()
         self.__counter_last_exit = time.perf_counter()
         
-class RobotState(MonitoredState):
+class TaskState(MonitoredState):
+    def __init__(self, parameters: Optional[State.Parameters] = None) -> None:
+        """Initialise une instance de State.
+
+        Args :
+            parameters (Parameters) : Les paramètres de comportement de l'état. Par défaut à une instance vide de Parameters.
+
+        Utilisation :
+            >>> TaskState()
+            >>> TaskState(State.Parameters())
+        """
+        super().__init__(parameters)
+        self.__task_value : 'FiniteStateMachine' = None
+
+    @property
+    def task_value(self) -> 'FiniteStateMachine':
+        return self.__task_value
+    
+    @task_value.setter
+    def task_value(self, value: 'FiniteStateMachine') -> None:
+        from FiniteStateMachine import FiniteStateMachine
+        if not isinstance(value, FiniteStateMachine):
+            raise TypeError("task_value must be of type FiniteStateMachine")
+        self.__task_value = value
+
+class RobotState(State):
     def __init__(self, robot: 'Robot', parameters: Optional[State.Parameters] = None):
         from Robot import Robot
         if not isinstance(robot, Robot):

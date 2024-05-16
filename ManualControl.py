@@ -21,7 +21,6 @@ class ManualControlFSM(FiniteStateMachine):
         state_left = self.__create_state(Robot.MoveDirection.LEFT, side=self.__robot.eye_blinker.Side.LEFT, cycle_duration= 1.0, percent_on = .5, begin_on =True)
         state_right = self.__create_state(Robot.MoveDirection.RIGHT, side=self.__robot.eye_blinker.Side.RIGHT, cycle_duration= 1.0, percent_on = .5, begin_on =True)
         
-        
         self.__connect(state_forward, Robot.KeyCodes.UP)
         self.__connect(state_backward, Robot.KeyCodes.DOWN)
         self.__connect(state_left, Robot.KeyCodes.LEFT)
@@ -47,12 +46,6 @@ class ManualControlFSM(FiniteStateMachine):
         self.state_stop.add_transition(ConditionalTransition(next_state=state, condition=ManualControlCondition(self.__robot, key)))
         state.add_transition(ConditionalTransition(next_state=self.state_stop, condition=ManualControlCondition(self.__robot, key, inverse=True)))
         
-    
-# from Robot import Robot
-# from Condition import ManualControlCondition
-# from State import ManualControlState
-# from FiniteStateMachine import FiniteStateMachine
-# from Transition import ConditionalTransition
 
 
         
