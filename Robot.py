@@ -59,6 +59,7 @@ class Robot():
         self.right_eye_color = None
         self.left_eye_color = None
         self.max_distance = 100.0
+        self.__old_key = self.KeyCodes.NONE
 
         self.__current_key = self.KeyCodes.NONE
 
@@ -168,13 +169,18 @@ class Robot():
         elif config == Robot.MoveDirection.ROTATE:
             self.__gpg.turn_degrees(1980)
         
-    def read_input(self, read_once : bool = False):    
+    def read_input(self, read_once : bool = False): 
         if read_once:
-            t_start = time.perf_counter()
             key_pressed = self.__remote_control.read()
-            while time.perf_counter() - t_start < 1:
-                print(f'\rtest', end='          ')
-            return Robot.KeyCodes(key_pressed)
-
+            if self.__old_key == Robot.KeyCodes.NONE:
+                self.__old_key = Robot.KeyCodes(key_pressed)
+                print(f'\rChnaged New key{Robot.KeyCodes(key_pressed)}', end="                                               ")
+                return Robot.KeyCodes(key_pressed)
+            elif Robot.KeyCodes(key_pressed) == Robot.KeyCodes.NONE:
+                self.__old_key = Robot.KeyCodes.NONE
+                print(f'\rChanged Old key: {Robot.KeyCodes(key_pressed)}', end="                                               ")
+                return Robot.KeyCodes(key_pressed)
+            print(f'\r{Robot.KeyCodes(key_pressed)}', end="                                               ")
+            return Robot.KeyCodes.NONE
         return Robot.KeyCodes(self.__remote_control.read())
     

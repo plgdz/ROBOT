@@ -1,6 +1,6 @@
 from FiniteStateMachine import FiniteStateMachine
 from State import ActionState, MonitoredState, TaskState
-from Condition import StateValueCondition, StateEntryDurationCondition, AlwaysTrueCondition
+from Condition import ManualControlCondition, StateValueCondition, StateEntryDurationCondition, AlwaysTrueCondition
 from WonderingFSM import WonderingFSM
 from Transition import ConditionalTransition
 from Robot import Robot
@@ -62,14 +62,14 @@ class C64(FiniteStateMachine):
 
         home = MonitoredState()
         home.add_entering_action(lambda : print("Robot is home"))
-        def home_listen_input():
-            home.custom_value = self.robot.read_input(read_once=True)
-            print(f'\rkey = {home.custom_value}', end='                                   ')
-        home.add_in_state_action(home_listen_input)
-        def home_reset_input():
-            home.custom_value = self.robot.KeyCodes.NONE
-            print(f'\rkey exit home = {home.custom_value}', end='                                   ')
-        home.add_exiting_action(home_reset_input)
+#         def home_listen_input():
+#             home.custom_value = self.robot.read_input(read_once=True)
+#             print(f'\rkey = {home.custom_value}', end='                                   ')
+#         home.add_in_state_action(home_listen_input)
+#         def home_reset_input():
+#             home.custom_value = self.robot.KeyCodes.NONE
+#             print(f'\rkey exit home = {home.custom_value}', end='                                   ')
+#         home.add_exiting_action(home_reset_input)
 
         task1 = TaskState()  
         task1.task_value = ManualControlFSM(robot=self.robot)
@@ -93,6 +93,8 @@ class C64(FiniteStateMachine):
 
         task2 = MonitoredState()
         task2.custom_value = WonderingFSM(robot=self.robot)
+        
+        task2.add_entering_action(lambda: print("Task 2"))
 
         # --------- ROBOT INSTANTIATION ---------
         robot_instantiation_succeeded = StateValueCondition(expected_value=True, monitored_state=robot_instantiation)
@@ -135,13 +137,15 @@ class C64(FiniteStateMachine):
         shut_down_robot.add_transition(shut_down_robot_to_end)
 
         # --------- HOME ---------
-        home_to_task1 = ConditionalTransition(next_state=task1, condition=StateValueCondition(expected_value=self.robot.KeyCodes.ONE, monitored_state=home))
-        home_to_shut_down_robot = ConditionalTransition(next_state=shut_down_robot, condition=StateValueCondition(expected_value=self.robot.KeyCodes.OK, monitored_state=home))
+        home_to_task1 = ConditionalTransition(next_state=task1, condition=ManualControlCondition(robot= self.robot, expected_value=self.robot.KeyCodes.ONE, read_once=True))
+        home_to_task2 = ConditionalTransition(next_state=task2, condition=ManualControlCondition(robot= self.robot, expected_value=self.robot.KeyCodes.TWO, read_once=True))
+        home_to_shut_down_robot = ConditionalTransition(next_state=shut_down_robot, condition=ManualControlCondition(robot= self.robot, expected_value=self.robot.KeyCodes.OK, read_once=True))
         home.add_transition(home_to_task1)
+        home.add_transition(home_to_task2)
         home.add_transition(home_to_shut_down_robot)
         
         # --------- TASK 1 ------------
-        task1_to_home = ConditionalTransition(next_state=home, condition=StateValueCondition(expected_value=self.robot.KeyCodes.OK, monitored_state=task1))
+        task1_to_home = ConditionalTransition(next_state=home, condition=ManualControlCondition(robot= self.robot,expected_value=self.robot.KeyCodes.OK, read_once=True))
         task1.add_transition(task1_to_home)
 
         # --------- TASK 2 ------------
