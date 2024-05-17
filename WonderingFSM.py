@@ -19,6 +19,7 @@ class WonderingFSM(FiniteStateMachine):
         self.state_wonder = WonderState(robot=self.__robot, side = self.__robot.eye_blinker.Side.BOTH, cycle_duration=.0, percent_on=.0, begin_on=False, off=True)
         self.state_rotate = self.__create_state(Robot.MoveDirection.ROTATE, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)
         self.state_stop = self.__create_state(Robot.MoveDirection.STOP, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)
+        self.state_stop.add_entering_action(lambda: print("Stop"))
         state_forward = self.__create_state(Robot.MoveDirection.FORWARD, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= 1.0, percent_on = .25, begin_on =True)
         state_backward = self.__create_state(Robot.MoveDirection.BACKWARD, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= 1.0, percent_on = .75, begin_on =True)
         state_left = self.__create_state(Robot.MoveDirection.LEFT, side=self.__robot.eye_blinker.Side.LEFT, cycle_duration= 1.0, percent_on = .5, begin_on =True)

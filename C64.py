@@ -160,6 +160,6 @@ class C64(FiniteStateMachine):
 
 
         self.layout = FiniteStateMachine.Layout()
-        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1])
+        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1, task2])
         self.layout.initial_state = robot_instantiation
         super().__init__(layout=self.layout)
