@@ -87,7 +87,6 @@ class C64(FiniteStateMachine):
             self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT_RECIPROCAL, cycle_duration=0.5, percent_on=0.5, begin_on=True)
 
         def task1_eyes_in_state_action():
-            task1.custom_value = self.robot.read_input()
             task1.task_value.track()
 
         def task1_eyes_exiting_action():
@@ -156,7 +155,7 @@ class C64(FiniteStateMachine):
         task1.add_transition(task1_to_home)
 
         # --------- TASK 2 ------------
-        task2_to_home = ConditionalTransition(next_state=task2, condition=ManualControlCondition(robot= self.robot,expected_value=self.robot.KeyCodes.OK, read_once=True))
+        task2_to_home = ConditionalTransition(next_state=home, condition=ManualControlCondition(robot= self.robot,expected_value=self.robot.KeyCodes.OK, read_once=True))
         task2.add_transition(task2_to_home)
 
 
