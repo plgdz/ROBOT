@@ -58,7 +58,7 @@ class Robot():
 
         self.right_eye_color = None
         self.left_eye_color = None
-        self.max_distance = 100.0
+        self.max_distance = 300.0
         self.__old_key = self.KeyCodes.NONE
 
         self.__current_key = self.KeyCodes.NONE
@@ -81,13 +81,21 @@ class Robot():
 
         try:
             self.__camera_servo_control = self.__gpg.init_servo(port=servo_cam_port)
+            self.__camera_servo_control.reset_servo()
         except:
             self.__camera_servo_control = None
 
         try:
             self.__range_sensor_servo_control = self.__gpg.init_servo(port=servo_range_port)
+            self.__range_sensor_servo_control.reset_servo()
         except:
             self.__range_sensor_servo_control = None
+
+    def reset_servos(self):
+        if self.__camera_servo_control:
+            self.__camera_servo_control.reset_servo()
+        if self.__range_sensor_servo_control:    
+            self.__range_sensor_servo_control.reset_servo()
 
     def init_distance_sensor(self):
         distance_sensor_port = 'I2C'
@@ -155,6 +163,12 @@ class Robot():
     def turn_off_eyes(self) -> None:
         self.__gpg.close_eyes()
 
+    def initialize_distance_sensor(self) -> None:
+        self.range_sensor_servo_control.reset_servo()
+
+    def stop_robot(self) -> None:
+        self.__gpg.stop()
+
     def move(self, config):
         if config == Robot.MoveDirection.FORWARD:
             self.__gpg.forward()
@@ -167,7 +181,7 @@ class Robot():
         elif config == Robot.MoveDirection.STOP:
             self.__gpg.stop()
         elif config == Robot.MoveDirection.ROTATE:
-            self.__gpg.turn_degrees(1980)
+            self.__gpg.turn_degrees(900)
         
     def read_input(self, read_once : bool = False): 
         if read_once:
@@ -184,3 +198,8 @@ class Robot():
             return Robot.KeyCodes.NONE
         return Robot.KeyCodes(self.__remote_control.read())
     
+    def read_distance_sensor(self):
+        return self.__distance_sensor.read_mm()
+    
+    def reached_max_distance(self):
+        return self.__distance_sensor.read_mm() <= self.max_distance
