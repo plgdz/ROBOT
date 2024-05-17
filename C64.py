@@ -57,6 +57,13 @@ class C64(FiniteStateMachine):
             print("Shutting down robot")
             self.robot.set_eyes_color("yellow")
             self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT_RECIPROCAL, cycle_duration=0.75, percent_on=0.5, begin_on=True)
+            
+        def shut_down_exiting_action():
+            self.robot.eye_blinker.turn_off(self.robot.eye_blinker.Side.BOTH)
+            
+        shut_down_robot.add_entering_action(shut_down_robot_entering_action)
+        shut_down_robot.add_in_state_action(self.robot.eye_blinker.track)
+        shut_down_robot.add_exiting_action(shut_down_exiting_action)
 
         end = ActionState(ActionState.Parameters(terminal=True))
 
@@ -149,12 +156,11 @@ class C64(FiniteStateMachine):
         task1.add_transition(task1_to_home)
 
         # --------- TASK 2 ------------
-        task2_duration = StateEntryDurationCondition(duration=3600, monitored_state=task2)
-        task2_to_home = ConditionalTransition(next_state=task2, condition=task2_duration)
+        task2_to_home = ConditionalTransition(next_state=task2, condition=ManualControlCondition(robot= self.robot,expected_value=self.robot.KeyCodes.OK, read_once=True))
         task2.add_transition(task2_to_home)
 
 
         self.layout = FiniteStateMachine.Layout()
-        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1, task2])
+        self.layout.add_states([robot_instantiation, instantiation_failed, robot_integrity, integrity_failed, integrity_succeeded, shut_down_robot, end, home, task1])
         self.layout.initial_state = robot_instantiation
         super().__init__(layout=self.layout)

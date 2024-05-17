@@ -457,7 +457,7 @@ class TaskState(MonitoredState):
             raise TypeError("task_value must be of type FiniteStateMachine")
         self.__task_value = value
 
-class RobotState(State):
+class RobotState(MonitoredState):
     def __init__(self, robot: 'Robot', parameters: Optional[State.Parameters] = None):
         from Robot import Robot
         if not isinstance(robot, Robot):
@@ -499,7 +499,7 @@ class ManualControlState(RobotState):
         self._robot.led_blinker.track()
         self._robot.move(Robot.MoveDirection.STOP)
 
-class WonderState(MonitoredState):
+class WonderState(RobotState):
     from Robot import Robot
     def __init__(self, robot: 'Robot', parameters: Optional[State.Parameters] = None, side : 'Robot.Side' = None, cycle_duration : float = 1.0, percent_on: float = .5, begin_on : bool = True, off=False):
         self.off = off
