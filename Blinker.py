@@ -514,7 +514,7 @@ class SideBlinker():
         """
         Fait clignoter le clignotant latéral spécifié.
 
-        Paramètres:
+        Paramètres:a
             - side (SideBlinker.Side): Le côté du clignotant à faire clignoter.
             - kwargs: Arguments supplémentaires à transmettre à la méthode de clignotement du clignotant.
 
@@ -530,10 +530,8 @@ class SideBlinker():
         """
         if side == side.LEFT:
             self.__left_blinker.blink(**kwargs)
-            self.__right_blinker.turn_off()
         elif side == side.RIGHT:
             self.__right_blinker.blink(**kwargs)
-            self.__left_blinker.turn_off()
         elif side == side.BOTH:
             self.__left_blinker.blink(**kwargs)
             self.__right_blinker.blink(**kwargs)

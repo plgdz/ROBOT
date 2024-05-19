@@ -99,10 +99,10 @@ class C64(FiniteStateMachine):
 
         task2 = MonitoredState()
         task2.custom_value = WonderingFSM(robot=self.robot)
+
         def task2_eyes_entering_action():
-            self.robot.set_left_eye_color("red")
-            self.robot.set_right_eye_color("blue")
-            self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT_RECIPROCAL, cycle_duration=0.5, percent_on=0.5, begin_on=True)
+            self.robot.set_right_eye_color("magenta")
+            self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT, cycle_duration=1, percent_on=0.5, begin_on=True)
 
         def task2_eyes_in_state_action():
             task2.custom_value.track()
