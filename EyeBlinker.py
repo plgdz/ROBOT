@@ -34,12 +34,3 @@ class EyeBlinker(SideBlinker):
             off_right_state_generator,
             on_right_state_generator
         )
-    
-    # def set_right_eye_color(self, color: tuple) -> None:
-    #     self.robot.__gpg.set_right_eye_color(color)
-
-    # def set_left_eye_color(self, color: tuple) -> None:
-    #     self.robot.__gpg.set_left_eye_color(color)
-
-    # def set_both_eye_color(self, color: tuple) -> None:
-    #     self.robot.__gpg.set_eyes_color(color)

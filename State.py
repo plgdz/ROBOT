@@ -482,7 +482,6 @@ class ManualControlState(RobotState):
             self._robot.turn_off_left_led()
             self._robot.turn_off_right_led()
         else:
-            print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
             self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
         self._robot.move(self.__move_config)
             
@@ -518,7 +517,6 @@ class WonderState(RobotState):
             self._robot.turn_off_left_led()
             self._robot.turn_off_right_led()
         else:
-            print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
             self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
             self._robot.eye_blinker.blink
         self._robot.move(self.__random_move())
@@ -553,7 +551,6 @@ class RotateState(RobotState):
             self._robot.turn_off_left_led()
             self._robot.turn_off_right_led()
         else:
-            print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
             self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
             
     def _do_in_state_action(self) -> None:

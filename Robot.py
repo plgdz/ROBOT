@@ -52,6 +52,9 @@ class Robot():
         except:
             self.__gpg = None
 
+        self.__zero_servo_telemetre = 81
+        self.__zero_servo_camera = 93
+
         self.init_remote()
         self.init_servo_motor()
         self.init_distance_sensor()
@@ -66,8 +69,7 @@ class Robot():
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
 
-        self.__zero_servo_telemetre = 81
-        self.__zero_servo_camera = 93
+        
         
     def init_remote(self):
         remote_control_port = 'AD1'
@@ -82,15 +84,16 @@ class Robot():
 
         try:
             self.__camera_servo_control = self.__gpg.init_servo(port=servo_cam_port)
-            self.__camera_servo_control.reset_servo()
         except:
             self.__camera_servo_control = None
 
         try:
             self.__range_sensor_servo_control = self.__gpg.init_servo(port=servo_range_port)
-            self.__range_sensor_servo_control.reset_servo()
         except:
             self.__range_sensor_servo_control = None
+
+        if self.__camera_servo_control and self.__range_sensor_servo_control:
+            self.reset_servos()
 
     def init_distance_sensor(self):
         distance_sensor_port = 'I2C'

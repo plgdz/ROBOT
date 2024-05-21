@@ -40,10 +40,7 @@ class C64(FiniteStateMachine):
             self.robot.set_eyes_color("green")
             self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.BOTH, cycle_duration=1., percent_on=0.5, begin_on=True)
     
-        
-
         def integrity_succeeded_exiting_action():
-            print('stop')
             self.robot.turn_off_eyes()
 
         integrity_succeeded.add_entering_action(integrity_succeeded_entering_action)
@@ -84,7 +81,6 @@ class C64(FiniteStateMachine):
         def task1_eyes_exiting_action():
             self.robot.turn_off_eyes()
 
-        task1.add_entering_action(lambda: print("Task 1"))
         task1.add_entering_action(task1_eyes_entering_action)
         task1.add_in_state_action(task1_eyes_in_state_action)
         task1.add_exiting_action(task1_eyes_exiting_action)
@@ -104,6 +100,7 @@ class C64(FiniteStateMachine):
         def task2_eyes_exiting_action():
             self.robot.turn_off_eyes()
             self.robot.stop_robot()
+            self.robot.reset_servos()
 
         task2.add_entering_action(task2_eyes_entering_action)
         task2.add_in_state_action(task2_eyes_in_state_action)
