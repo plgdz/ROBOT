@@ -520,6 +520,7 @@ class WonderState(RobotState):
         else:
             print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
             self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
+            self._robot.eye_blinker.blink
         self._robot.move(self.__random_move())
             
     def _do_in_state_action(self) -> None:
@@ -534,3 +535,49 @@ class WonderState(RobotState):
         super()._do_exiting_action()
         self._robot.led_blinker.track()
         self._robot.move(Robot.MoveDirection.STOP)
+
+class RotateState(RobotState):
+    from Robot import Robot
+    def __init__(self, robot: 'Robot', side : 'Robot.Side' = None, cycle_duration : float = 1.0, percent_on: float = .5, begin_on : bool = True, off=False):
+        self.off = off
+        self.side = side
+        self.cycle_duration = cycle_duration
+        self.percent_on = percent_on
+        self.begin_on = begin_on
+        super().__init__(robot)
+    
+    def _do_entering_action(self) -> None:
+        super()._do_entering_action()
+        self.custom_value = [time.perf_counter(), 0, 0, False]
+        if self.off:
+            self._robot.turn_off_left_led()
+            self._robot.turn_off_right_led()
+        else:
+            print(self.side, self.cycle_duration, self.percent_on, self.begin_on)
+            self._robot.led_blinker.blink(self.side, cycle_duration = self.cycle_duration, percent_on=self.percent_on, begin_on=self.begin_on)
+            
+    def _do_in_state_action(self) -> None:
+        if self.off:
+            self._robot.turn_off_left_led()
+            self._robot.turn_off_right_led()
+        self._robot.led_blinker.track()
+        self._robot.eye_blinker.track()
+        if time.perf_counter() - self.custom_value[0]  < 2.0:
+            self.custom_value[1] = self._robot.get_distance(35)
+        elif time.perf_counter() - self.custom_value[0] > 2.0 and  time.perf_counter() - self.custom_value[0] < 4.0:
+            self.custom_value[2] = self._robot.get_distance(-35)
+        else:
+            self._robot.reset_servos()
+            if not self.custom_value[3]:
+                if self.custom_value[1] > self.custom_value[2]:
+                    self._robot.turn_degree(35)
+                else:
+                    self._robot.turn_degree(-35)
+            self.custom_value = "found"
+        super()._do_in_state_action()
+        
+    def _do_exiting_action(self) -> None:
+        super()._do_exiting_action()
+        self._robot.led_blinker.track()
+        self._robot.move(Robot.MoveDirection.STOP)
+

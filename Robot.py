@@ -65,6 +65,9 @@ class Robot():
 
         self.led_blinker = LedBlinker(self)
         self.eye_blinker = EyeBlinker(self)
+
+        self.__zero_servo_telemetre = 81
+        self.__zero_servo_camera = 93
         
 
     # -------------------------------------------------------------------------
@@ -90,12 +93,6 @@ class Robot():
             self.__range_sensor_servo_control.reset_servo()
         except:
             self.__range_sensor_servo_control = None
-
-    def reset_servos(self):
-        if self.__camera_servo_control:
-            self.__camera_servo_control.reset_servo()
-        if self.__range_sensor_servo_control:    
-            self.__range_sensor_servo_control.reset_servo()
 
     def init_distance_sensor(self):
         distance_sensor_port = 'I2C'
@@ -182,6 +179,9 @@ class Robot():
             self.__gpg.stop()
         elif config == Robot.MoveDirection.ROTATE:
             self.__gpg.turn_degrees(900)
+
+    def turn_degree(self, degree):
+        self.__gpg.turn_degrees(degree)
         
     def read_input(self, read_once : bool = False): 
         if read_once:
@@ -203,3 +203,16 @@ class Robot():
     
     def reached_max_distance(self):
         return self.__distance_sensor.read_mm() <= self.max_distance
+
+    def get_distance(self, angle):
+        if angle < -45 :
+            angle = -45
+        elif angle > 45:
+            angle = 45
+        
+        self.__range_sensor_servo_control.rotate_servo(self.__zero_servo_telemetre - angle)
+        return self.read_distance_sensor()
+
+    def reset_servos(self):
+        self.__range_sensor_servo_control.rotate_servo(self.__zero_servo_telemetre)
+        self.__camera_servo_control.rotate_servo(self.__zero_servo_camera)

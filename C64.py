@@ -69,14 +69,6 @@ class C64(FiniteStateMachine):
 
         home = MonitoredState()
         home.add_entering_action(lambda : print("Robot is home"))
-#         def home_listen_input():
-#             home.custom_value = self.robot.read_input(read_once=True)
-#             print(f'\rkey = {home.custom_value}', end='                                   ')
-#         home.add_in_state_action(home_listen_input)
-#         def home_reset_input():
-#             home.custom_value = self.robot.KeyCodes.NONE
-#             print(f'\rkey exit home = {home.custom_value}', end='                                   ')
-#         home.add_exiting_action(home_reset_input)
 
         task1 = TaskState()  
         task1.task_value = ManualControlFSM(robot=self.robot)
@@ -102,8 +94,10 @@ class C64(FiniteStateMachine):
 
         def task2_eyes_entering_action():
             self.robot.set_right_eye_color("magenta")
-            self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.RIGHT, cycle_duration=1, percent_on=0.5, begin_on=True)
-
+            self.robot.set_left_eye_color("blue")
+            self.robot.eye_blinker.blink(self.robot.eye_blinker.Side.LEFT, cycle_duration=1., percent_on=0.5, begin_on=True)
+            self.robot.turn_on_right_eye()
+            
         def task2_eyes_in_state_action():
             task2.custom_value.track()
 
@@ -111,7 +105,6 @@ class C64(FiniteStateMachine):
             self.robot.turn_off_eyes()
             self.robot.stop_robot()
 
-        task2.add_entering_action(lambda: print("Task 2"))
         task2.add_entering_action(task2_eyes_entering_action)
         task2.add_in_state_action(task2_eyes_in_state_action)
         task2.add_exiting_action(task2_eyes_exiting_action)

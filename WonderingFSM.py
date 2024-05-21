@@ -1,11 +1,12 @@
 from Robot import Robot
-from Condition import DistanceSensorCondition, ManualControlCondition, StateEntryDurationCondition
-from State import ManualControlState, WonderState
+from Condition import DistanceSensorCondition, ManualControlCondition, StateEntryDurationCondition, StateValueCondition
+from State import ManualControlState, RotateState, WonderState
 from FiniteStateMachine import FiniteStateMachine
 from Transition import ConditionalTransition
 from typing import TYPE_CHECKING
 from Robot import Robot
 import random
+import time
 from Blinker import SideBlinker
 if TYPE_CHECKING:
     from Robot import Robot
@@ -18,9 +19,18 @@ class WonderingFSM(FiniteStateMachine):
         
         self.state_wonder = WonderState(robot=self.__robot, side = self.__robot.eye_blinker.Side.BOTH, cycle_duration=.0, percent_on=.0, begin_on=False, off=True)
 
-        self.state_rotate = self.__create_state(Robot.MoveDirection.ROTATE, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)
-        self.state_stop = self.__create_state(Robot.MoveDirection.STOP, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)
-        self.state_stop.add_entering_action(lambda: print("Stop"))
+        self.state_rotate = RotateState(robot=self.__robot, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)
+        def entering_rotate():
+            self.__robot.set_left_eye_color("red")
+        
+        def exiting_rotate():
+            self.__robot.set_left_eye_color("blue")
+
+        self.state_rotate.add_entering_action(entering_rotate)
+        self.state_rotate.add_exiting_action(exiting_rotate)
+
+        self.state_stop = self.__create_state(Robot.MoveDirection.STOP, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= .0, percent_on = .0, begin_on =False, off=True)        
+
         state_forward = self.__create_state(Robot.MoveDirection.FORWARD, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= 1.0, percent_on = .25, begin_on =True)
         state_backward = self.__create_state(Robot.MoveDirection.BACKWARD, side=self.__robot.eye_blinker.Side.BOTH, cycle_duration= 1.0, percent_on = .75, begin_on =True)
         state_left = self.__create_state(Robot.MoveDirection.LEFT, side=self.__robot.eye_blinker.Side.LEFT, cycle_duration= 1.0, percent_on = .5, begin_on =True)
@@ -34,7 +44,7 @@ class WonderingFSM(FiniteStateMachine):
         self.state_wonder.add_transition(ConditionalTransition(next_state=self.state_wonder, condition=StateEntryDurationCondition(duration=2.0, monitored_state=self.state_wonder)))
         self.state_wonder.add_transition(ConditionalTransition(next_state=self.state_rotate, condition=DistanceSensorCondition(self.__robot)))
         self.state_stop.add_transition(ConditionalTransition(next_state=self.state_wonder, condition=StateEntryDurationCondition(duration=2.0, monitored_state=self.state_stop)))
-        self.state_rotate.add_transition(ConditionalTransition(next_state=self.state_stop, condition=StateEntryDurationCondition(duration=5.0, monitored_state=self.state_rotate)))
+        self.state_rotate.add_transition(ConditionalTransition(next_state=self.state_wonder, condition=StateValueCondition(expected_value="found", monitored_state=self.state_rotate)))
 
         layout = FiniteStateMachine.Layout()
         layout.add_states([
