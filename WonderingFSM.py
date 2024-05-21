@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class WonderingFSM(FiniteStateMachine):
-    def __init__(self, robot):
+    def __init__(self, robot : 'Robot') -> None:
         self.__robot = robot
         
         self.state_wonder = WonderState(robot=self.__robot, side = self.__robot.eye_blinker.Side.BOTH, cycle_duration=.0, percent_on=.0, begin_on=False, off=True)
@@ -60,10 +60,10 @@ class WonderingFSM(FiniteStateMachine):
 
         super().__init__(layout)
     
-    def __create_state(self, direction, side = None, cycle_duration = 1.0, percent_on = .5, begin_on = True, off = False):
+    def __create_state(self, direction : 'Robot.MoveDirection', side = None, cycle_duration = 1.0, percent_on = .5, begin_on = True, off = False) -> ManualControlState:
         return ManualControlState(robot=self.__robot, move_configuration=direction, side = side, cycle_duration  = cycle_duration, percent_on = percent_on, begin_on = begin_on, off = off)
     
-    def __connect(self, state, key):
+    def __connect(self, state : ManualControlState, key : 'Robot.KeyCodes') -> None:
         self.state_stop.add_transition(ConditionalTransition(next_state=state, condition=ManualControlCondition(self.__robot, key)))
         self.state_wonder.add_transition(ConditionalTransition(next_state=state, condition=ManualControlCondition(self.__robot, key)))
         state.add_transition(ConditionalTransition(next_state=self.state_stop, condition=ManualControlCondition(self.__robot, key, inverse=True)))

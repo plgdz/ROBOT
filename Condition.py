@@ -789,18 +789,18 @@ class RobotCondition(Condition):
         self._robot: Robot = robot
 
 class DistanceSensorCondition(RobotCondition):
-    def __init__(self, robot : 'Robot', inverse: bool = False):
+    def __init__(self, robot : 'Robot', inverse: bool = False) -> None:
         super().__init__(robot, inverse)
         self.__expected_value = True
         
-    def _compare(self):
+    def _compare(self) -> bool:
         return self._robot.reached_max_distance() == self.__expected_value
 
 class ManualControlCondition(RobotCondition):
-    def __init__(self, robot : 'Robot', expected_value : 'Robot.KeyCodes', read_once: bool= False, inverse: bool = False):
+    def __init__(self, robot : 'Robot', expected_value : 'Robot.KeyCodes', read_once: bool= False, inverse: bool = False) -> None:
         super().__init__(robot, inverse)
         self.__expected_value = expected_value
         self.__read_once = read_once
         
-    def _compare(self):
+    def _compare(self) -> bool:
         return self._robot.read_input(read_once=self.__read_once) == self.__expected_value

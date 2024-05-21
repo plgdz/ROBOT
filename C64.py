@@ -9,9 +9,9 @@ from time import perf_counter
 
 class C64(FiniteStateMachine):
     def __init__(self):
-        self.robot = Robot()
+        self.robot : Robot  = Robot()
 
-        robot_instantiation = MonitoredState()
+        robot_instantiation  = MonitoredState()
         robot_instantiation.custom_value = self.robot.is_instanciated
 
         instantiation_failed = MonitoredState()

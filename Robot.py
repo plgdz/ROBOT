@@ -69,8 +69,6 @@ class Robot():
         self.__zero_servo_telemetre = 81
         self.__zero_servo_camera = 93
         
-
-    # -------------------------------------------------------------------------
     def init_remote(self):
         remote_control_port = 'AD1'
         try:
@@ -101,7 +99,6 @@ class Robot():
         except:
             self.__distance_sensor = None
 
-    # -------------------------------------------------------------------------
     @property
     def is_instanciated(self) -> bool:
         return self.__gpg is not None
@@ -122,25 +119,19 @@ class Robot():
         
     def turn_off_right_led(self) -> None:
         self.__gpg.led_off('right')
-        
-    #--------------------------------------------------------------------------------------------
 
     def set_left_eye_color(self, color : str) -> None:
         self.__gpg.set_left_eye_color(self.COLORS[color])
-        #print(f"set_left_eye_color : {self.COLORS[color]}")
         self.left_eye_color = color
 
     def turn_on_left_eye(self) -> None:
         self.__gpg.open_left_eye()
-        #print(f'turn_on_left_eye : {self.left_eye_color}')
 
     def turn_off_left_eye(self) -> None:
         self.__gpg.close_left_eye()
-        #print("turn_off_left_eye")
 
     def set_right_eye_color(self, color : str) -> None:
         self.__gpg.set_right_eye_color(self.COLORS[color])
-        #print(f"set_right_eye_color : {self.COLORS[color]}")
         self.right_eye_color = color
 
     def turn_on_right_eye(self) -> None:
@@ -166,7 +157,7 @@ class Robot():
     def stop_robot(self) -> None:
         self.__gpg.stop()
 
-    def move(self, config):
+    def move(self, config : MoveDirection) -> None:
         if config == Robot.MoveDirection.FORWARD:
             self.__gpg.forward()
         elif config == Robot.MoveDirection.RIGHT:
@@ -180,7 +171,7 @@ class Robot():
         elif config == Robot.MoveDirection.ROTATE:
             self.__gpg.turn_degrees(900)
 
-    def turn_degree(self, degree):
+    def turn_degree(self, degree: int):
         self.__gpg.turn_degrees(degree)
         
     def read_input(self, read_once : bool = False): 
@@ -188,31 +179,27 @@ class Robot():
             key_pressed = self.__remote_control.read()
             if self.__old_key == Robot.KeyCodes.NONE:
                 self.__old_key = Robot.KeyCodes(key_pressed)
-                print(f'\rChnaged New key{Robot.KeyCodes(key_pressed)}', end="                                               ")
                 return Robot.KeyCodes(key_pressed)
             elif Robot.KeyCodes(key_pressed) == Robot.KeyCodes.NONE:
                 self.__old_key = Robot.KeyCodes.NONE
-                print(f'\rChanged Old key: {Robot.KeyCodes(key_pressed)}', end="                                               ")
                 return Robot.KeyCodes(key_pressed)
-            print(f'\r{Robot.KeyCodes(key_pressed)}', end="                                               ")
             return Robot.KeyCodes.NONE
         return Robot.KeyCodes(self.__remote_control.read())
     
-    def read_distance_sensor(self):
+    def read_distance_sensor(self) -> int:
         return self.__distance_sensor.read_mm()
     
-    def reached_max_distance(self):
+    def reached_max_distance(self) -> bool:
         return self.__distance_sensor.read_mm() <= self.max_distance
 
-    def get_distance(self, angle):
+    def get_distance(self, angle:int = 0) ->int:
         if angle < -45 :
             angle = -45
         elif angle > 45:
             angle = 45
-        
         self.__range_sensor_servo_control.rotate_servo(self.__zero_servo_telemetre - angle)
         return self.read_distance_sensor()
 
-    def reset_servos(self):
+    def reset_servos(self) -> None:
         self.__range_sensor_servo_control.rotate_servo(self.__zero_servo_telemetre)
         self.__camera_servo_control.rotate_servo(self.__zero_servo_camera)
