@@ -15,6 +15,8 @@ Pendant qu’il erre ou pendant qu’on contrôle le robot, si jamais il trouve 
 
 - L’œil droit va avoir la couleur “magenta” et va blinker avec un cycle duration de 1 seconde, et qui va être ouverte la moitié du cycle. Le moment où on entre dans la tâche 2. Puis, le 2 yeux sont fermés le moment qu’on entre dans state_wonder et state_stop (dans la tâche 2). Pour les states qui restent (forward, backward, left, right) les yeux et les LED ont les mêmes configs que la tâche 1.
 
+- L'œil gauche clignote en bleu quand le robot se deplace et en rouge lorsqu'il cherche sa direction apres avoir détecter un obstacle.
+
 - Dans state_wonder et state_stop, les phares ne s’allument pas et pour les states qui restent (forward, backward, left, right) les yeux et les LED ont les mêmes configs que la tâche 1.
 
 - Le robot peut aller en avant, en arrière, à droite, à gauche et s'arrêter. Le wonder state va choisir au hasard une direction dans laquelle le robot va se déplacer entre les directions suivantes (Forward, Right, Left).
